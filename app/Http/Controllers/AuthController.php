@@ -8,32 +8,23 @@ use App\Models\Siswa;
 
 class AuthController extends Controller
 {
-    /**
-     * Daftar guard yang dipakai untuk masing-masing role.
-     * Sesuaikan namanya dengan yang ada di config/auth.php kamu.
-     */
     protected $guardMap = [
         'admin'   => 'web',
         'petugas' => 'petugas',
         'siswa'   => 'siswa',
     ];
 
-    /**
-     * Daftar route dashboard tujuan setelah login berhasil per role.
-     */
     protected $dashboardMap = [
         'admin'   => 'admin.dashboard',
         'petugas' => 'petugas.dashboard',
         'siswa'   => 'siswa.dashboard',
     ];
 
-    // 1. Halaman Portal Pilihan Role (TIDAK MEMBUTUHKAN $role)
     public function index()
     {
         return view('auth.login');
     }
 
-    // 2. Halaman Form Login Sesuai Role (MEMBUTUHKAN $role)
     public function loginRole($role)
     {
         $validRoles = ['siswa', 'petugas', 'admin'];
@@ -42,15 +33,9 @@ class AuthController extends Controller
             abort(404);
         }
 
-        // Variabel $role dikirim menggunakan compact('role')
         return view('auth.login', compact('role'));
     }
 
-    /**
-     * 3. Proses Autentikasi Login (Admin & Petugas)
-     *    Siswa TIDAK login lewat sini karena tidak punya password,
-     *    siswa login lewat method loginByBarcode() (scan QR/barcode).
-     */
     public function authenticate(Request $request, $role)
     {
         $validRoles = ['siswa', 'petugas', 'admin'];
@@ -59,7 +44,6 @@ class AuthController extends Controller
             abort(404);
         }
 
-        // Siswa tidak boleh login manual, arahkan untuk pakai scan barcode
         if ($role === 'siswa') {
             return redirect()
                 ->route('login.role', ['role' => 'siswa'])
@@ -91,17 +75,16 @@ class AuthController extends Controller
             ->withInput($request->only('email'));
     }
 
-    /**
-     * 4. Login otomatis lewat hasil scan kamera (khusus Siswa)
-     */
     public function loginByBarcode(Request $request)
     {
         $request->validate([
             'code' => 'required|string',
         ]);
 
-        $siswa = Siswa::where('nisn', $request->code)
-            ->orWhere('barcode_code', $request->code)
+        $code = trim($request->code); // Membersihkan whitespace/linebreaks
+
+        $siswa = Siswa::where('nisn', $code)
+            ->orWhere('barcode_code', $code)
             ->first();
 
         if (!$siswa) {
@@ -116,13 +99,10 @@ class AuthController extends Controller
 
         return response()->json([
             'success'  => true,
-            'redirect' => route('siswa.dashboard'),
+            'redirect' => route($this->dashboardMap['siswa']),
         ]);
     }
 
-    /**
-     * 5. Logout (berlaku untuk guard mana pun yang sedang aktif)
-     */
     public function logout(Request $request)
     {
         foreach (['web', 'petugas', 'siswa'] as $guard) {
@@ -134,6 +114,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        // Sesuaikan nama route portal utama Anda (misal: 'portal' atau 'login')
         return redirect()->route('portal')->with('success', 'Anda berhasil logout.');
     }
 }

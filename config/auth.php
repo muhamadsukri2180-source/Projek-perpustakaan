@@ -35,13 +35,22 @@ return [
     |
     */
 
-    'guards' => [
-        'web' => [
-            'driver' => 'session',
-            'provider' => 'users',
-        ],
+'guards' => [
+    'web' => [
+        'driver' => 'session',
+        'provider' => 'users',
     ],
 
+    'petugas' => [
+        'driver' => 'session',
+        'provider' => 'petugas',
+    ],
+
+    'siswa' => [
+        'driver' => 'session',
+        'provider' => 'siswa',
+    ],
+],
     /*
     |--------------------------------------------------------------------------
     | User Providers
@@ -60,17 +69,21 @@ return [
     */
 
     'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\User::class,
-        ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+    'users' => [
+        'driver' => 'eloquent',
+        'model' => App\Models\User::class,
     ],
 
+    'petugas' => [
+        'driver' => 'eloquent',
+        'model' => App\Models\Petugas::class,
+    ],
+
+    'siswa' => [
+        'driver' => 'eloquent',
+        'model' => App\Models\Siswa::class,
+    ],
+],
     /*
     |--------------------------------------------------------------------------
     | Resetting Passwords
