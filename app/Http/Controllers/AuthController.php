@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Siswa;
+use App\Models\Petugas;
 
 class AuthController extends Controller
 {
@@ -75,6 +76,12 @@ class AuthController extends Controller
             ->withInput($request->only('email'));
     }
 
+    /**
+     * Login via scan barcode.
+     * Mengecek dua kemungkinan sumber data:
+     * 1. Tabel Siswa (nisn / barcode_code) -> login sebagai guard 'siswa'
+     * 2. Tabel Petugas (barcode_code)      -> login sebagai guard 'petugas'
+     */
     public function loginByBarcode(Request $request)
     {
         $request->validate([
@@ -83,23 +90,38 @@ class AuthController extends Controller
 
         $code = trim($request->code); // Membersihkan whitespace/linebreaks
 
+        // 1. Cek apakah barcode ini milik SISWA
         $siswa = Siswa::where('nisn', $code)
             ->orWhere('barcode_code', $code)
             ->first();
 
-        if (!$siswa) {
+        if ($siswa) {
+            Auth::guard('siswa')->login($siswa);
+            $request->session()->regenerate();
+
             return response()->json([
-                'success' => false,
-                'message' => 'Barcode tidak dikenali atau siswa tidak terdaftar.',
+                'success'  => true,
+                'redirect' => route($this->dashboardMap['siswa']),
             ]);
         }
 
-        Auth::guard('siswa')->login($siswa);
-        $request->session()->regenerate();
+        // 2. Kalau bukan siswa, cek apakah barcode ini milik PETUGAS
+        $petugas = Petugas::where('barcode_code', $code)->first();
 
+        if ($petugas) {
+            Auth::guard('petugas')->login($petugas);
+            $request->session()->regenerate();
+
+            return response()->json([
+                'success'  => true,
+                'redirect' => route($this->dashboardMap['petugas']),
+            ]);
+        }
+
+        // 3. Kalau dua-duanya tidak ketemu, barcode tidak dikenali
         return response()->json([
-            'success'  => true,
-            'redirect' => route($this->dashboardMap['siswa']),
+            'success' => false,
+            'message' => 'Barcode tidak dikenali atau tidak terdaftar.',
         ]);
     }
 

@@ -52,7 +52,7 @@
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Kelas <span class="text-rose-500">*</span></label>
                     <select name="kelas_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
                         <option value="">-- Pilih Kelas --</option>
-                        @foreach($kelases ?? [] as $kelas)
+                        @foreach($kelasList ?? [] as $kelas)
                             <option value="{{ $kelas->id }}" {{ old('kelas_id') == $kelas->id ? 'selected' : '' }}>
                                 {{ $kelas->nama_kelas ?? $kelas->nama }}
                             </option>
@@ -64,7 +64,7 @@
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Jurusan <span class="text-rose-500">*</span></label>
                     <select name="jurusan_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
                         <option value="">-- Pilih Jurusan --</option>
-                        @foreach($jurusans ?? [] as $jurusan)
+                        @foreach($jurusanList ?? [] as $jurusan)
                             <option value="{{ $jurusan->id }}" {{ old('jurusan_id') == $jurusan->id ? 'selected' : '' }}>
                                 {{ $jurusan->nama_jurusan ?? $jurusan->nama }}
                             </option>

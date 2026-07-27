@@ -4,20 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Petugas - Perpustakaan Digital</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        /* Animasi Latar Belakang Gradasi Navbar */
         .animated-gradient {
             background: linear-gradient(-45deg, #1e3a8a, #2563eb, #3b82f6, #0284c7);
             background-size: 400% 400%;
@@ -36,7 +33,7 @@
     <nav class="animated-gradient text-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                
+
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white shadow-inner">
                         <i class="fa-solid fa-book-bookmark text-lg"></i>
@@ -47,23 +44,23 @@
                 </div>
 
                 <div class="hidden md:flex items-center gap-1 font-medium text-sm">
-                    <a href="{{ Route::has('admin.dashboard') ? route('admin.dashboard') : '#' }}" 
+                    <a href="{{ Route::has('admin.dashboard') ? route('admin.dashboard') : '#' }}"
                        class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition">
                         <i class="fa-solid fa-chart-pie mr-1.5 text-xs"></i> Dashboard
                     </a>
-                    <a href="{{ Route::has('admin.siswa') ? route('admin.siswa') : '#' }}" 
+                    <a href="{{ Route::has('admin.siswa') ? route('admin.siswa') : '#' }}"
                        class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition">
                         <i class="fa-solid fa-users mr-1.5 text-xs"></i> Data Siswa
                     </a>
-                    <a href="{{ Route::has('admin.petugas.index') ? route('admin.petugas.index') : '#' }}" 
+                    <a href="{{ Route::has('admin.petugas.index') ? route('admin.petugas.index') : '#' }}"
                        class="px-4 py-2 rounded-xl bg-white/20 text-white font-semibold shadow-sm border border-white/20 backdrop-blur-sm transition">
                          <i class="fa-solid fa-user-tie mr-1.5 text-xs"></i> Kelola Petugas
                     </a>
-                    <a href="{{ Route::has('admin.presensi') ? route('admin.presensi') : '#' }}" 
+                    <a href="{{ Route::has('admin.presensi') ? route('admin.presensi') : '#' }}"
                        class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition">
                         <i class="fa-solid fa-clipboard-user mr-1.5 text-xs"></i> Presensi
                     </a>
-                    <a href="{{ Route::has('admin.laporan.harian') ? route('admin.laporan.harian') : '#' }}" 
+                    <a href="{{ Route::has('admin.laporan.harian') ? route('admin.laporan.harian') : '#' }}"
                        class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition">
                         <i class="fa-solid fa-file-lines mr-1.5 text-xs"></i> Laporan
                     </a>
@@ -74,8 +71,8 @@
                         <span class="text-xs font-bold leading-tight">Admin</span>
                     </div>
 
-                    <a href="{{ Route::has('admin.profile') ? route('admin.profile') : '#' }}" 
-                       title="Lihat Profil Admin" 
+                    <a href="{{ Route::has('admin.profile') ? route('admin.profile') : '#' }}"
+                       title="Lihat Profil Admin"
                        class="w-9 h-9 rounded-full bg-white text-blue-600 font-bold flex items-center justify-center text-sm shadow-md ring-2 ring-white/30 hover:ring-white hover:scale-105 active:scale-95 transition-all duration-200 group">
                         <span class="group-hover:text-blue-700">A</span>
                     </a>
@@ -86,7 +83,7 @@
     </nav>
 
     <div class="min-h-screen flex flex-col justify-between">
-        
+
         <main class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
 
             @if(session('success'))
@@ -126,7 +123,7 @@
                         Kelola Data Petugas
                     </h1>
                     <p class="text-slate-500 mt-1 text-sm font-medium">
-                        Manajemen pengguna dan pengelola akun petugas perpustakaan.
+                        Manajemen data petugas perpustakaan beserta barcode presensinya.
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
@@ -137,7 +134,7 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-                
+
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Petugas</p>
@@ -162,12 +159,12 @@
 
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition duration-300">
                     <div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Hak Akses</p>
-                        <h3 class="text-2xl font-extrabold text-slate-800 mt-1">Operator</h3>
-                        <span class="text-[11px] text-amber-600 font-semibold bg-amber-50 px-2.5 py-0.5 rounded-md mt-2 inline-block">Petugas & Presensi</span>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Akses Masuk</p>
+                        <h3 class="text-2xl font-extrabold text-slate-800 mt-1">Barcode</h3>
+                        <span class="text-[11px] text-amber-600 font-semibold bg-amber-50 px-2.5 py-0.5 rounded-md mt-2 inline-block">Scan NIK</span>
                     </div>
                     <div class="w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-amber-200 text-xl">
-                        <i class="fa-solid fa-key"></i>
+                        <i class="fa-solid fa-qrcode"></i>
                     </div>
                 </div>
 
@@ -177,7 +174,7 @@
                 <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Daftar Petugas Perpustakaan</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Kelola data login dan akun admin/petugas</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Kelola data & barcode akses petugas</p>
                     </div>
                 </div>
 
@@ -186,7 +183,7 @@
                         <thead class="bg-slate-50 text-slate-400 uppercase text-[11px] font-bold tracking-wider">
                             <tr>
                                 <th class="py-3.5 px-6">Nama Petugas</th>
-                                <th class="py-3.5 px-6">Email / Username</th>
+                                <th class="py-3.5 px-6">NIK</th>
                                 <th class="py-3.5 px-6">Tanggal Terdaftar</th>
                                 <th class="py-3.5 px-6 text-center">Aksi</th>
                             </tr>
@@ -196,29 +193,35 @@
                             <tr class="hover:bg-slate-50/80 transition">
                                 <td class="py-4 px-6 font-semibold text-slate-800 flex items-center gap-3">
                                     <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs uppercase shadow-sm">
-                                        {{ substr($petugas->nama ?? $petugas->name ?? 'P', 0, 2) }}
+                                        {{ substr($petugas->nama ?? 'P', 0, 2) }}
                                     </div>
                                     <div>
-                                        <p class="leading-tight">{{ $petugas->nama ?? $petugas->name ?? '-' }}</p>
+                                        <p class="leading-tight">{{ $petugas->nama ?? '-' }}</p>
                                         <span class="text-[11px] text-slate-400 font-normal">Petugas Perpustakaan</span>
                                     </div>
                                 </td>
                                 <td class="py-4 px-6 font-medium text-slate-700">
-                                    <i class="fa-regular fa-envelope text-slate-400 mr-1.5"></i>
-                                    {{ $petugas->email ?? '-' }}
+                                    <i class="fa-solid fa-id-card text-slate-400 mr-1.5"></i>
+                                    {{ $petugas->nik ?? '-' }}
                                 </td>
                                 <td class="py-4 px-6 font-medium text-slate-700">
                                     <i class="fa-regular fa-calendar text-slate-400 mr-1.5"></i>
                                     {{ $petugas->created_at ? $petugas->created_at->format('d M Y') : '-' }}
                                 </td>
                                 <td class="py-4 px-6 text-center">
-                                    <form action="{{ route('admin.petugas.destroy', $petugas->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus petugas ini?');" class="inline-block">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition flex items-center justify-center text-xs font-semibold" title="Hapus Petugas">
-                                            <i class="fa-solid fa-trash-can"></i>
-                                        </button>
-                                    </form>
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a href="{{ route('admin.petugas.barcode.generate', ['id' => $petugas->id]) }}" class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition flex items-center justify-center text-xs font-semibold" title="Lihat Barcode">
+                                            <i class="fa-solid fa-qrcode"></i>
+                                        </a>
+
+                                        <form action="{{ route('admin.petugas.destroy', $petugas->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus petugas ini?');" class="inline-block">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition flex items-center justify-center text-xs font-semibold" title="Hapus Petugas">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
@@ -261,13 +264,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Email</label>
-                    <input type="email" name="email" required placeholder="nama@sekolah.sch.id" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Password</label>
-                    <input type="password" name="password" required placeholder="Minimal 6 karakter" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
+                    <label class="block text-xs font-bold text-slate-600 uppercase mb-1">NIK</label>
+                    <input type="text" name="nik" required placeholder="Masukkan NIK petugas" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
@@ -275,7 +273,7 @@
                         Batal
                     </button>
                     <button type="submit" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md shadow-blue-200 transition">
-                        Simpan Petugas
+                        Simpan &amp; Buat Barcode
                     </button>
                 </div>
             </form>

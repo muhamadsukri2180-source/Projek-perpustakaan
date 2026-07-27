@@ -262,13 +262,14 @@
 
             <div class="grid grid-cols-2 gap-3">
                 <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-2 gap-3">
     <div>
         <label class="block text-xs font-semibold text-slate-600 mb-1">Kelas <span class="text-rose-500">*</span></label>
         <select name="kelas_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
             <option value="">-- Pilih Kelas --</option>
-            <option value="1">X</option>
-            <option value="2">XI</option>
-            <option value="3">XII</option>
+            <option value="1" {{ old('kelas_id') == '1' ? 'selected' : '' }}>X</option>
+            <option value="2" {{ old('kelas_id') == '2' ? 'selected' : '' }}>XI</option>
+            <option value="3" {{ old('kelas_id') == '3' ? 'selected' : '' }}>XII</option>
         </select>
     </div>
 
@@ -276,15 +277,16 @@
         <label class="block text-xs font-semibold text-slate-600 mb-1">Jurusan <span class="text-rose-500">*</span></label>
         <select name="jurusan_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
             <option value="">-- Pilih Jurusan --</option>
-            <option value="1">RPL 1</option>
-            <option value="2">RPL 2</option>
-            <option value="3">BR 1</option>
-            <option value="4">BR 2</option>
-            <option value="5">MP</option>
-            <option value="6">AK 1</option>
-            <option value="7">AK 2</option>
+            <option value="1" {{ old('jurusan_id') == '1' ? 'selected' : '' }}>RPL 1</option>
+            <option value="2" {{ old('jurusan_id') == '2' ? 'selected' : '' }}>RPL 2</option>
+            <option value="3" {{ old('jurusan_id') == '3' ? 'selected' : '' }}>BR 1</option>
+            <option value="4" {{ old('jurusan_id') == '4' ? 'selected' : '' }}>BR 2</option>
+            <option value="5" {{ old('jurusan_id') == '5' ? 'selected' : '' }}>MP</option>
+            <option value="6" {{ old('jurusan_id') == '6' ? 'selected' : '' }}>AK 1</option>
+            <option value="7" {{ old('jurusan_id') == '7' ? 'selected' : '' }}>AK 2</option>
         </select>
     </div>
+</div>
 </div>
 
             <div>

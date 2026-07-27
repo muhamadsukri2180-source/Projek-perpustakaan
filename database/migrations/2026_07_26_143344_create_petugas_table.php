@@ -10,11 +10,10 @@ return new class extends Migration
     {
         Schema::create('petugas', function (Blueprint $table) {
             $table->id();
-            $table->string('nip', 30)->unique()->nullable();
             $table->string('nama');
-            $table->string('email')->unique();
-            $table->string('no_hp', 20)->nullable();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->string('nik')->unique();
+            $table->string('barcode_code')->unique()->nullable();
+            $table->rememberToken();
             $table->timestamps();
         });
     }

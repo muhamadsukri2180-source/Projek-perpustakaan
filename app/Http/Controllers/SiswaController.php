@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Siswa;
+use App\Models\Kelas;
+use App\Models\Jurusan;
 use App\Models\Absensi;
 
 class SiswaController extends Controller
@@ -16,18 +18,16 @@ class SiswaController extends Controller
      */
     public function dashboard()
     {
-        $siswa = Auth::user(); // Pastikan guard/auth mengembalikan instance Siswa
+        $siswa = Auth::guard('siswa')->user(); // FIX: eksplisit guard siswa
 
-        // 1. Hitung total kunjungan/absensi siswa
         $totalKunjungan = Absensi::where('siswa_id', $siswa->id)->count();
 
-        // 2. Cek status absensi/kunjungan hari ini
         $presensiHariIni = Absensi::where('siswa_id', $siswa->id)
             ->whereDate('created_at', now()->today())
             ->latest()
             ->first();
 
-        $statusHariIni = 'belum'; // Default status
+        $statusHariIni = 'belum';
         if ($presensiHariIni) {
             if (is_null($presensiHariIni->waktu_keluar)) {
                 $statusHariIni = 'di_dalam';
@@ -36,7 +36,6 @@ class SiswaController extends Controller
             }
         }
 
-        // 3. Ambil 5 riwayat absensi terbaru
         $riwayatTerbaru = Absensi::where('siswa_id', $siswa->id)
             ->latest()
             ->take(5)
@@ -55,9 +54,8 @@ class SiswaController extends Controller
      */
     public function riwayat()
     {
-        $siswa = Auth::user();
+        $siswa = Auth::guard('siswa')->user(); // FIX: eksplisit guard siswa
 
-        // Ambil semua riwayat absensi dengan paginasi
         $riwayatList = Absensi::where('siswa_id', $siswa->id)
             ->latest()
             ->paginate(10);
@@ -74,10 +72,8 @@ class SiswaController extends Controller
      */
     public function index(Request $request)
     {
-        // Mengambil data siswa beserta relasi kelas dan jurusan
         $query = Siswa::with(['kelas', 'jurusan']);
 
-        // Fitur Pencarian berdasarkan Nama atau NISN
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -87,8 +83,10 @@ class SiswaController extends Controller
         }
 
         $siswaList = $query->latest()->paginate(10);
+        $kelasList = Kelas::all();
+        $jurusanList = Jurusan::all();
 
-        return view('admin.siswa', compact('siswaList'));
+        return view('admin.siswa', compact('siswaList', 'kelasList', 'jurusanList'));
     }
 
     /**
@@ -96,7 +94,10 @@ class SiswaController extends Controller
      */
     public function create()
     {
-        return view('admin.siswa.create');
+        $kelasList = Kelas::all();
+        $jurusanList = Jurusan::all();
+
+        return view('admin.siswa.create', compact('kelasList', 'jurusanList'));
     }
 
     /**
@@ -104,41 +105,42 @@ class SiswaController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Validasi Input Data
+        // FIX: tambahkan exists:kelas,id dan exists:jurusan,id
+        // supaya kalau id tidak valid, muncul pesan validasi rapi
+        // bukan error SQL foreign key mentah.
         $request->validate([
             'nisn'       => 'required|numeric|unique:siswa,nisn',
             'nama'       => 'required|string|max:255',
-            'kelas_id'   => 'required',
-            'jurusan_id' => 'required',
+            'kelas_id'   => 'required|exists:kelas,id',
+            'jurusan_id' => 'required|exists:jurusan,id',
             'foto'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ], [
             'nisn.required'       => 'NISN wajib diisi.',
+            'nisn.numeric'        => 'NISN harus berupa angka.',
             'nisn.unique'         => 'NISN ini sudah terdaftar.',
             'nama.required'       => 'Nama lengkap wajib diisi.',
             'kelas_id.required'   => 'Kelas wajib dipilih.',
+            'kelas_id.exists'     => 'Kelas yang dipilih tidak valid atau sudah tidak tersedia.',
             'jurusan_id.required' => 'Jurusan wajib dipilih.',
+            'jurusan_id.exists'   => 'Jurusan yang dipilih tidak valid atau sudah tidak tersedia.',
             'foto.image'          => 'File foto harus berupa gambar.',
             'foto.max'            => 'Ukuran foto maksimal 2MB.',
         ]);
 
-        // 2. Upload Foto (jika ada)
         $fotoPath = null;
         if ($request->hasFile('foto')) {
             $fotoPath = $request->file('foto')->store('siswa-foto', 'public');
         }
 
-        // 3. Simpan Data ke Tabel 'siswa'
         $siswa = Siswa::create([
             'nisn'         => $request->nisn,
             'nama'         => $request->nama,
             'kelas_id'     => $request->kelas_id,
             'jurusan_id'   => $request->jurusan_id,
-            'barcode_code' => $request->nisn, // Menggunakan NISN sebagai default barcode
+            'barcode_code' => $request->nisn,
             'foto'         => $fotoPath,
         ]);
 
-        // 4. Redirect ke halaman generate barcode supaya admin bisa
-        //    langsung melihat & mengunduh QR code siswa yang baru dibuat.
         return redirect()
             ->route('admin.barcode.generate', ['id' => $siswa->id])
             ->with('success', 'Data siswa berhasil ditambahkan. Silakan unduh barcode siswa.');
@@ -159,7 +161,10 @@ class SiswaController extends Controller
     public function edit($id)
     {
         $siswa = Siswa::findOrFail($id);
-        return view('admin.siswa.edit', compact('siswa'));
+        $kelasList = Kelas::all();
+        $jurusanList = Jurusan::all();
+
+        return view('admin.siswa.edit', compact('siswa', 'kelasList', 'jurusanList'));
     }
 
     /**
@@ -172,12 +177,14 @@ class SiswaController extends Controller
         $request->validate([
             'nisn'       => 'required|numeric|unique:siswa,nisn,' . $id,
             'nama'       => 'required|string|max:255',
-            'kelas_id'   => 'required',
-            'jurusan_id' => 'required',
+            'kelas_id'   => 'required|exists:kelas,id',
+            'jurusan_id' => 'required|exists:jurusan,id',
             'foto'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ], [
+            'kelas_id.exists'   => 'Kelas yang dipilih tidak valid atau sudah tidak tersedia.',
+            'jurusan_id.exists' => 'Jurusan yang dipilih tidak valid atau sudah tidak tersedia.',
         ]);
 
-        // Handle foto baru jika diunggah
         if ($request->hasFile('foto')) {
             if ($siswa->foto && Storage::disk('public')->exists($siswa->foto)) {
                 Storage::disk('public')->delete($siswa->foto);
@@ -201,7 +208,6 @@ class SiswaController extends Controller
     {
         $siswa = Siswa::findOrFail($id);
 
-        // Hapus foto terkait jika ada
         if ($siswa->foto && Storage::disk('public')->exists($siswa->foto)) {
             Storage::disk('public')->delete($siswa->foto);
         }

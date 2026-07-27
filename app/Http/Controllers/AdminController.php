@@ -24,25 +24,20 @@ class AdminController extends Controller
     {
         $today = Carbon::today();
 
-        // 1. Counter Ringkasan Data
         $totalSiswa = Siswa::count();
         $totalPetugas = Petugas::count();
 
-        // Jumlah siswa yang masuk hari ini
         $pengunjungHariIni = Absensi::whereDate('created_at', $today)->count();
 
-        // Jumlah siswa yang masih berada di perpustakaan
         $sedangDiPerpus = Absensi::whereDate('created_at', $today)
             ->whereNull('waktu_keluar')
             ->count();
 
-        // 2. Data Absensi Terbaru (5 Transaksi Terakhir)
         $absensiTerbaru = Absensi::with(['siswa.kelas', 'siswa.jurusan'])
             ->latest()
             ->take(5)
             ->get();
 
-        // 3. Data Grafik Kunjungan 7 Hari Terakhir (Senin - Minggu)
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek = Carbon::now()->endOfWeek();
 
@@ -83,7 +78,7 @@ class AdminController extends Controller
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('nisn', 'like', "%{$search}%");
             });
@@ -106,13 +101,18 @@ class AdminController extends Controller
 
     public function siswaStore(Request $request)
     {
+        // Validasi disesuaikan agar tidak mengecek 'exists' di tabel database kelas/jurusan
         $validatedData = $request->validate([
-            'nisn'          => 'required|unique:siswas,nisn',
+            'nisn'          => 'required|string|max:50|unique:siswa,nisn',
             'nama'          => 'required|string|max:255',
-            'kelas_id'      => 'required|exists:kelas,id',
-            'jurusan_id'    => 'required|exists:jurusans,id',
+            'kelas_id'      => 'required', // Menerima pilihan kelas tanpa cek database
+            'jurusan_id'    => 'required', // Menerima pilihan jurusan tanpa cek database
             'jenis_kelamin' => 'nullable|in:L,P',
             'foto'          => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ], [
+            'kelas_id.required'   => 'Kelas wajib dipilih.',
+            'jurusan_id.required' => 'Jurusan wajib dipilih.',
+            'nisn.unique'         => 'NISN / NIS sudah terdaftar.',
         ]);
 
         if ($request->hasFile('foto')) {
@@ -121,8 +121,6 @@ class AdminController extends Controller
 
         $siswa = Siswa::create($validatedData);
 
-        // Setelah siswa berhasil ditambahkan, arahkan ke halaman
-        // generate barcode supaya admin bisa langsung melihat & unduh QR-nya.
         return redirect()
             ->route('admin.barcode.generate', ['id' => $siswa->id])
             ->with('success', 'Data siswa berhasil ditambahkan. Silakan unduh barcode siswa.');
@@ -149,10 +147,10 @@ class AdminController extends Controller
         $siswa = Siswa::findOrFail($id);
 
         $validatedData = $request->validate([
-            'nisn'          => 'required|unique:siswas,nisn,' . $id,
+            'nisn'          => 'required|string|max:50|unique:siswa,nisn,' . $id,
             'nama'          => 'required|string|max:255',
-            'kelas_id'      => 'required|exists:kelas,id',
-            'jurusan_id'    => 'required|exists:jurusans,id',
+            'kelas_id'      => 'required',
+            'jurusan_id'    => 'required',
             'jenis_kelamin' => 'nullable|in:L,P',
             'foto'          => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
@@ -184,19 +182,19 @@ class AdminController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | MASTER DATA: KELAS, JURUSAN & BARCODE
+    | MASTER DATA: KELAS, JURUSAN & BARCODE SISWA
     |--------------------------------------------------------------------------
     */
 
     public function kelasIndex()
     {
-        $kelasList = Kelas::withCount('siswas')->get();
+        $kelasList = Kelas::withCount('siswa')->get();
         return view('admin.kelas', compact('kelasList'));
     }
 
     public function jurusanIndex()
     {
-        $jurusanList = Jurusan::withCount('siswas')->get();
+        $jurusanList = Jurusan::withCount('siswa')->get();
         return view('admin.jurusan', compact('jurusanList'));
     }
 
@@ -209,7 +207,6 @@ class AdminController extends Controller
             $siswaSelected = Siswa::with(['kelas', 'jurusan'])->find($request->id);
 
             if ($siswaSelected) {
-                // QR berisi NISN siswa, dipakai untuk scan presensi / login.
                 $qrCode = QrCode::format('svg')
                     ->size(300)
                     ->margin(1)
@@ -222,9 +219,6 @@ class AdminController extends Controller
         return view('admin.barcode-generate', compact('siswaSelected', 'siswaList', 'qrCode'));
     }
 
-    /**
-     * Unduh barcode/QR code siswa dalam format SVG.
-     */
     public function barcodeDownload($id)
     {
         $siswa = Siswa::findOrFail($id);
@@ -243,7 +237,7 @@ class AdminController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | KELOLA PETUGAS (DI DALAM ADMIN CONTROLLER)
+    | KELOLA PETUGAS
     |--------------------------------------------------------------------------
     */
 
@@ -256,18 +250,56 @@ class AdminController extends Controller
     public function petugasStore(Request $request)
     {
         $request->validate([
-            'nama'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:petugas,email',
-            'password' => 'required|string|min:6',
+            'nama' => 'required|string|max:255',
+            'nik'  => 'required|string|max:50|unique:petugas,nik',
         ]);
 
-        Petugas::create([
-            'nama'     => $request->nama,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
+        $petugas = Petugas::create([
+            'nama'         => $request->nama,
+            'nik'          => $request->nik,
+            'barcode_code' => 'PTG-' . strtoupper(uniqid()),
         ]);
 
-        return redirect()->route('admin.petugas.index')->with('success', 'Petugas berhasil ditambahkan!');
+        return redirect()
+            ->route('admin.petugas.barcode.generate', ['id' => $petugas->id])
+            ->with('success', 'Petugas berhasil ditambahkan! Silakan unduh barcode petugas.');
+    }
+
+    public function petugasBarcodeGenerate(Request $request)
+    {
+        $petugasSelected = null;
+        $qrCode = null;
+
+        if ($request->has('id')) {
+            $petugasSelected = Petugas::find($request->id);
+
+            if ($petugasSelected) {
+                $qrCode = QrCode::format('svg')
+                    ->size(300)
+                    ->margin(1)
+                    ->generate($petugasSelected->barcode_code);
+            }
+        }
+
+        $petugasList = Petugas::select('id', 'nama', 'nik')->get();
+
+        return view('admin.petugas-barcode', compact('petugasSelected', 'petugasList', 'qrCode'));
+    }
+
+    public function petugasBarcodeDownload($id)
+    {
+        $petugas = Petugas::findOrFail($id);
+
+        $qrImage = QrCode::format('svg')
+            ->size(500)
+            ->margin(1)
+            ->generate($petugas->barcode_code);
+
+        $filename = 'barcode-petugas-' . $petugas->nik . '.svg';
+
+        return response($qrImage)
+            ->header('Content-Type', 'image/svg+xml')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 
     public function petugasDestroy($id)
@@ -280,7 +312,7 @@ class AdminController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | FITUR PRESENSI & SCANNER BARCODE
+    | PRESENSI
     |--------------------------------------------------------------------------
     */
 
@@ -303,7 +335,7 @@ class AdminController extends Controller
     public function presensiScan(Request $request)
     {
         $request->validate([
-            'nisn' => 'required|string|exists:siswas,nisn',
+            'nisn' => 'required|string|exists:siswa,nisn',
         ]);
 
         $siswa = Siswa::where('nisn', $request->nisn)->first();
@@ -316,14 +348,14 @@ class AdminController extends Controller
 
         if ($absensiAktif) {
             $absensiAktif->update([
-                'waktu_keluar' => Carbon::now()
+                'waktu_keluar' => Carbon::now(),
             ]);
 
             return redirect()->back()->with('success', 'Absen Keluar Berhasil! Terima kasih, ' . $siswa->nama);
         } else {
             Absensi::create([
                 'siswa_id'    => $siswa->id,
-                'waktu_masuk' => Carbon::now()
+                'waktu_masuk' => Carbon::now(),
             ]);
 
             return redirect()->back()->with('success', 'Absen Masuk Berhasil! Selamat datang, ' . $siswa->nama);
@@ -332,7 +364,7 @@ class AdminController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | REKAP LAPORAN (HARIAN, MINGGUAN, BULANAN, TAHUNAN)
+    | LAPORAN
     |--------------------------------------------------------------------------
     */
 
@@ -396,17 +428,11 @@ class AdminController extends Controller
 
         return view('admin.laporan', compact('laporanTahunan', 'tahun'));
     }
-    
+
     public function statistikPengunjung()
     {
         return view('admin.presensi');
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | MANAJEMEN PROFIL ADMIN
-    |--------------------------------------------------------------------------
-    */
 
     public function profileIndex()
     {
