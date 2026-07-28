@@ -30,6 +30,7 @@
             --line:    #DCEAFB;
             --amber:   #F59E0B;
             --teal:    #0D9488;
+            --rose:    #E11D48;
         }
 
         * { box-sizing: border-box; }
@@ -69,6 +70,21 @@
             bottom: -160px; left: -100px;
         }
         .hero-bg > * { position: relative; z-index: 1; }
+
+        .eyebrow-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid var(--line);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .04em;
+            color: var(--blue-700);
+            box-shadow: 0 10px 24px -16px rgba(21,79,168,0.4);
+        }
 
         /* ---------- Scanner card ---------- */
         .scanner-shell {
@@ -129,6 +145,73 @@
         .corner-bl { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; border-bottom-left-radius: 10px; }
         .corner-br { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; border-bottom-right-radius: 10px; }
 
+        /* ---------- Toggle kamera ---------- */
+        .toggle-cam-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 11.5px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--blue-700);
+            transition: all .2s ease;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .toggle-cam-btn:hover { background: var(--sky-50); }
+        .toggle-cam-btn:active { transform: scale(0.97); }
+        .toggle-cam-btn.is-off {
+            background: var(--ink-900);
+            color: #fff;
+            border-color: var(--ink-900);
+        }
+        .toggle-cam-btn.is-off:hover { background: #142B4D; }
+        .toggle-cam-btn .dot {
+            width: 7px; height: 7px; border-radius: 999px;
+            background: #34D399;
+            box-shadow: 0 0 0 3px rgba(52,211,153,0.25);
+        }
+        .toggle-cam-btn.is-off .dot {
+            background: var(--rose);
+            box-shadow: 0 0 0 3px rgba(225,29,72,0.25);
+        }
+
+        /* ---------- Overlay kamera mati ---------- */
+        .camera-off-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            background: radial-gradient(60% 60% at 50% 0%, #10294B 0%, transparent 70%), var(--ink-900);
+            color: #fff;
+            text-align: center;
+            padding: 24px;
+            z-index: 5;
+        }
+        .camera-off-overlay i.icon-off {
+            font-size: 34px;
+            color: var(--cyan-400);
+            opacity: .9;
+        }
+        .btn-nyalakan {
+            padding: 10px 22px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 12.5px;
+            background: linear-gradient(135deg, var(--blue-500), var(--cyan-400));
+            color: #fff;
+            box-shadow: 0 10px 25px -10px rgba(47,128,237,0.65);
+            transition: transform .15s ease;
+        }
+        .btn-nyalakan:hover { transform: translateY(-1px); }
+        .btn-nyalakan:active { transform: translateY(0); }
+
         /* ---------- Barcode divider (signature motif) ---------- */
         .barcode-divider {
             height: 46px;
@@ -145,6 +228,25 @@
             );
             background-size: 27px 100%;
             opacity: 0.9;
+        }
+
+        /* ---------- Statistik mini di hero ---------- */
+        .stat-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 1rem;
+            background: #fff;
+            border: 1px solid var(--line);
+            box-shadow: 0 10px 24px -18px rgba(21,79,168,0.5);
+        }
+        .stat-chip .stat-icon {
+            width: 34px; height: 34px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px;
+            color: #fff;
         }
 
         /* ---------- Carousel "Tentang" ---------- */
@@ -263,9 +365,6 @@
                     <a href="#galeri" class="hover:text-blue-600 transition">Galeri</a>
                 </nav>
 
-                <div class="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold"></div>
-                </div>
-
                 <button id="btnMenuMobile" class="md:hidden w-10 h-10 flex items-center justify-center rounded-xl" style="border: 1px solid var(--line); color: var(--blue-700);">
                     <i class="fa-solid fa-bars"></i>
                 </button>
@@ -285,7 +384,14 @@
         <section id="scanner" class="hero-bg py-14 lg:py-20 px-4 sm:px-6 lg:px-8">
             <div class="max-w-4xl mx-auto space-y-8">
 
-                <div class="text-center space-y-3 reveal">
+                <div class="text-center space-y-4 reveal">
+                    <span class="eyebrow-pill">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                        </span>
+                        Presensi Barcode Real-time
+                    </span>
                     <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight" style="color: var(--ink-900);">
                         Scan Kartu Anggota Anda
                     </h1>
@@ -315,6 +421,17 @@
                 <div class="max-w-md mx-auto reveal">
                     <div class="scanner-shell p-4 sm:p-5 rounded-3xl">
 
+                        <div class="flex items-center justify-between mb-3 px-1 gap-2">
+                            <span class="text-xs font-bold flex items-center gap-1.5" style="color: var(--ink-900);">
+                                <i class="fa-solid fa-camera" style="color: var(--blue-600);"></i>
+                                Kamera Presensi
+                            </span>
+                            <button type="button" id="btnToggleKamera" class="toggle-cam-btn is-off" aria-pressed="false">
+                                <span class="dot"></span>
+                                <span id="toggleKameraText">Nyalakan Kamera</span>
+                            </button>
+                        </div>
+
                         <div class="camera-container">
                             <div id="reader"></div>
 
@@ -324,19 +441,29 @@
                                 <div class="corner corner-bl"></div>
                                 <div class="corner corner-br"></div>
                             </div>
+
+                            <div id="cameraOffOverlay" class="camera-off-overlay">
+                                <i class="fa-solid fa-video-slash icon-off"></i>
+                                <div>
+                                    <p class="font-bold text-sm mb-1">Kamera Belum Aktif</p>
+                                    <p class="text-xs opacity-75 max-w-[240px] mx-auto leading-relaxed">Tekan tombol di bawah untuk menyalakan kamera dan mulai presensi</p>
+                                </div>
+                                <button type="button" id="btnNyalakanOverlay" class="btn-nyalakan">
+                                    <i class="fa-solid fa-power-off mr-1.5"></i> Nyalakan Kamera
+                                </button>
+                            </div>
                         </div>
 
                         <div class="mt-4 px-4 py-3 rounded-2xl flex flex-col items-center text-center gap-1"
                              style="background: var(--sky-50); border: 1px solid var(--line);">
-                            <div id="scanStatus" class="text-xs font-bold flex items-center gap-2.5" style="color: var(--blue-700);">
+                            <div id="scanStatus" class="text-xs font-bold flex items-center gap-2.5" style="color: var(--muted);">
                                 <span class="relative flex h-2.5 w-2.5">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5" style="background: var(--muted);"></span>
                                 </span>
-                                Kamera aktif, silakan dekatkan kartu...
+                                Kamera belum dinyalakan
                             </div>
                             <div id="scanHint" class="text-[11px] font-medium" style="color: var(--muted);">
-                                Posisikan barcode di dalam kotak
+                                Tekan "Nyalakan Kamera" untuk memulai presensi
                             </div>
 
                             <button type="button" id="btnRestartCamera"
@@ -394,8 +521,6 @@
                     <p class="text-xs sm:text-sm leading-relaxed" style="color: var(--ink-700);">
                         Dengan sistem ini, data kunjungan tercatat akurat dan pengelola dapat memantau tingkat keaktifan membaca siswa dari waktu ke waktu.
                     </p>
-                    <div class="pt-2 grid grid-cols-2 gap-4">
-                    </div>
                 </div>
             </div>
         </section>
@@ -483,11 +608,6 @@
     <footer class="border-t py-8 text-center text-xs" style="border-color: var(--line); color: var(--muted);">
         <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p>&copy; {{ date('Y') }} Sistem Presensi Perpustakaan Digital — SMK Negeri 17 Jakarta.</p>
-            <div class="flex items-center gap-4">
-                <span><i class="fa-solid fa-code"></i> Versi 3.1</span>
-                <span>&bull;</span>
-                <span><i class="fa-solid fa-circle-check text-emerald-500"></i> Server Online</span>
-            </div>
         </div>
     </footer>
 
@@ -526,6 +646,8 @@
         let kodeTerakhir = null;
         let waktuTerakhir = 0;
         let hintInterval = null;
+        let kameraAktif = false;      // status kamera saat ini (nyala/mati)
+        let sedangMemulai = false;    // guard supaya tidak start() dobel saat proses async
 
         const daftarHint = [
             'Posisikan barcode di dalam kotak',
@@ -551,12 +673,55 @@
         }
 
         /**
+         * Memperbarui tampilan tombol toggle & overlay sesuai status kamera saat ini.
+         */
+        function updateToggleUI() {
+            const btn = document.getElementById('btnToggleKamera');
+            const text = document.getElementById('toggleKameraText');
+            const overlay = document.getElementById('cameraOffOverlay');
+
+            if (kameraAktif) {
+                btn.classList.remove('is-off');
+                btn.setAttribute('aria-pressed', 'true');
+                text.textContent = 'Matikan Kamera';
+                overlay.classList.add('hidden');
+            } else {
+                btn.classList.add('is-off');
+                btn.setAttribute('aria-pressed', 'false');
+                text.textContent = 'Nyalakan Kamera';
+                overlay.classList.remove('hidden');
+            }
+        }
+
+        function statusKameraAktif() {
+            document.getElementById('scanStatus').innerHTML = `
+                <span class="relative flex h-2.5 w-2.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                </span>
+                Kamera aktif, silakan dekatkan kartu...`;
+        }
+
+        function statusKameraMati() {
+            document.getElementById('scanStatus').innerHTML =
+                '<span class="flex items-center gap-2" style="color: var(--muted);"><i class="fa-solid fa-circle-pause"></i> Kamera nonaktif</span>';
+            document.getElementById('scanHint').textContent = 'Tekan "Nyalakan Kamera" untuk memulai presensi';
+        }
+
+        /**
          * Kamera dikonfigurasi untuk kecepatan baca maksimal:
          * - fps tinggi (24) supaya frame dianalisis lebih sering
          * - kotak pemindai persegi tanpa mask gelap, kamera tetap terlihat penuh
          * - useBarCodeDetectorIfSupported memakai BarcodeDetector native browser jika tersedia
          */
         function mulaiKamera() {
+            if (sedangMemulai) return;
+            sedangMemulai = true;
+
+            document.getElementById('btnRestartCamera').classList.add('hidden');
+            document.getElementById('scanStatus').innerHTML =
+                '<span style="color:#1D6FE0;" class="flex items-center gap-2"><i class="fa-solid fa-spinner fa-spin"></i> Menyalakan kamera...</span>';
+
             html5QrCode = new Html5Qrcode("reader", {
                 formatsToSupport: [
                     Html5QrcodeSupportedFormats.QR_CODE,
@@ -587,6 +752,10 @@
                 onScanSuccess,
                 () => {}
             ).then(() => {
+                kameraAktif = true;
+                sedangMemulai = false;
+                updateToggleUI();
+                statusKameraAktif();
                 mulaiSiklusHint();
             }).catch(() => {
                 html5QrCode.start(
@@ -595,8 +764,15 @@
                     onScanSuccess,
                     () => {}
                 ).then(() => {
+                    kameraAktif = true;
+                    sedangMemulai = false;
+                    updateToggleUI();
+                    statusKameraAktif();
                     mulaiSiklusHint();
                 }).catch(() => {
+                    kameraAktif = false;
+                    sedangMemulai = false;
+                    updateToggleUI();
                     document.getElementById('scanStatus').innerHTML =
                         '<span class="text-rose-500 flex items-center gap-1.5"><i class="fa-solid fa-video-slash"></i> Kamera tidak dapat diakses atau izin ditolak</span>';
                     document.getElementById('scanHint').textContent = 'Periksa izin kamera pada browser Anda';
@@ -605,7 +781,38 @@
             });
         }
 
+        /**
+         * Menghentikan stream kamera sepenuhnya (bukan sekadar pause) supaya
+         * lampu indikator kamera perangkat ikut mati dan baterai/perangkat tidak terus bekerja.
+         */
+        function matikanKamera() {
+            hentikanSiklusHint();
+            kameraAktif = false;
+            updateToggleUI();
+            statusKameraMati();
+            document.getElementById('btnRestartCamera').classList.add('hidden');
+
+            if (html5QrCode) {
+                const instance = html5QrCode;
+                html5QrCode = null;
+                instance.stop()
+                    .then(() => instance.clear())
+                    .catch(() => {});
+            }
+        }
+
+        function toggleKamera() {
+            if (sedangMemulai) return;
+            if (kameraAktif) {
+                matikanKamera();
+            } else {
+                mulaiKamera();
+            }
+        }
+
         function onScanSuccess(decodedText) {
+            if (!kameraAktif) return; // jaga-jaga kalau event masih tersisa setelah dimatikan
+
             const sekarang = Date.now();
 
             if (sedangMemproses) return;
@@ -663,22 +870,33 @@
 
         function resetStatusScan() {
             sedangMemproses = false;
-            document.getElementById('scanStatus').innerHTML = `
-                <span class="relative flex h-2.5 w-2.5">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
-                </span>
-                Kamera aktif, silakan dekatkan kartu...`;
+            if (!kameraAktif) return;
+            statusKameraAktif();
             mulaiSiklusHint();
         }
 
         document.getElementById('btnRestartCamera').addEventListener('click', function () {
             this.classList.add('hidden');
-            resetStatusScan();
             mulaiKamera();
         });
 
-        window.addEventListener('load', mulaiKamera);
+        document.getElementById('btnToggleKamera').addEventListener('click', toggleKamera);
+        document.getElementById('btnNyalakanOverlay').addEventListener('click', toggleKamera);
+
+        // Kamera TIDAK otomatis menyala saat halaman dibuka — siswa menekan
+        // tombol "Nyalakan Kamera" sendiri, sehingga mereka punya kendali penuh
+        // kapan kamera aktif (privasi & kontrol lebih baik dibanding auto-start).
+        window.addEventListener('load', function () {
+            updateToggleUI();
+            statusKameraMati();
+        });
+
+        // Matikan kamera dengan rapi ketika pengguna meninggalkan/menutup halaman
+        window.addEventListener('beforeunload', function () {
+            if (html5QrCode) {
+                try { html5QrCode.stop(); } catch (e) {}
+            }
+        });
 
         (function () {
             const track = document.getElementById('carouselTrack');

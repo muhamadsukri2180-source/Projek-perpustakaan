@@ -15,5 +15,6 @@ class Petugas extends Authenticatable
         'nama',
         'nik',
         'barcode_code',
+        'foto', 
     ];
 }

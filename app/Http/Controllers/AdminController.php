@@ -22,15 +22,15 @@ class AdminController extends Controller
      */
     public function dashboard()
     {
-        $today = Carbon::today();
+        $today = Carbon::today()->toDateString();
 
         $totalSiswa = Siswa::count();
         $totalPetugas = Petugas::count();
 
-        $pengunjungHariIni = Absensi::whereDate('created_at', $today)->count();
+        $pengunjungHariIni = Absensi::where('tanggal', $today)->count();
 
-        $sedangDiPerpus = Absensi::whereDate('created_at', $today)
-            ->whereNull('waktu_keluar')
+        $sedangDiPerpus = Absensi::where('tanggal', $today)
+            ->where('status', 'di_perpus')
             ->count();
 
         $absensiTerbaru = Absensi::with(['siswa.kelas', 'siswa.jurusan'])
@@ -42,12 +42,12 @@ class AdminController extends Controller
         $endOfWeek = Carbon::now()->endOfWeek();
 
         $grafikData = Absensi::select(
-                DB::raw('DATE(created_at) as tanggal'),
+                DB::raw('DATE(tanggal) as tgl'),
                 DB::raw('count(*) as total')
             )
-            ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
-            ->groupBy(DB::raw('DATE(created_at)'))
-            ->pluck('total', 'tanggal')
+            ->whereBetween('tanggal', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
+            ->groupBy(DB::raw('DATE(tanggal)'))
+            ->pluck('total', 'tgl')
             ->toArray();
 
         $chartData = [];
@@ -76,12 +76,21 @@ class AdminController extends Controller
     {
         $query = Siswa::with(['kelas', 'jurusan']);
 
-        if ($request->has('search') && $request->search != '') {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('nisn', 'like', "%{$search}%");
+                  ->orWhere('nisn', 'like', "%{$search}%")
+                  ->orWhere('nis', 'like', "%{$search}%");
             });
+        }
+
+        if ($request->filled('kelas_id')) {
+            $query->where('kelas_id', $request->kelas_id);
+        }
+
+        if ($request->filled('jurusan_id')) {
+            $query->where('jurusan_id', $request->jurusan_id);
         }
 
         $siswaList = $query->latest()->paginate(10);
@@ -101,18 +110,29 @@ class AdminController extends Controller
 
     public function siswaStore(Request $request)
     {
-        // Validasi disesuaikan agar tidak mengecek 'exists' di tabel database kelas/jurusan
         $validatedData = $request->validate([
             'nisn'          => 'required|string|max:50|unique:siswa,nisn',
+            'nis'           => 'required|string|max:50|unique:siswa,nis',
             'nama'          => 'required|string|max:255',
-            'kelas_id'      => 'required', // Menerima pilihan kelas tanpa cek database
-            'jurusan_id'    => 'required', // Menerima pilihan jurusan tanpa cek database
-            'jenis_kelamin' => 'nullable|in:L,P',
+            'kelas_id'      => 'required|integer|exists:kelas,id',
+            'jurusan_id'    => 'required|integer|exists:jurusan,id',
+            'jenis_kelamin' => 'required|in:L,P',
             'foto'          => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ], [
-            'kelas_id.required'   => 'Kelas wajib dipilih.',
-            'jurusan_id.required' => 'Jurusan wajib dipilih.',
-            'nisn.unique'         => 'NISN / NIS sudah terdaftar.',
+            'nisn.required'          => 'NISN wajib diisi.',
+            'nisn.unique'            => 'NISN sudah terdaftar.',
+            'nis.required'           => 'NIS wajib diisi.',
+            'nis.unique'             => 'NIS sudah terdaftar.',
+            'nama.required'          => 'Nama siswa wajib diisi.',
+            'kelas_id.required'      => 'Kelas wajib dipilih.',
+            'kelas_id.exists'        => 'Kelas yang dipilih tidak valid.',
+            'jurusan_id.required'    => 'Jurusan wajib dipilih.',
+            'jurusan_id.exists'      => 'Jurusan yang dipilih tidak valid.',
+            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
+            'jenis_kelamin.in'       => 'Jenis kelamin harus L (Laki-laki) atau P (Perempuan).',
+            'foto.image'             => 'File foto harus berupa gambar.',
+            'foto.mimes'             => 'Format foto harus jpeg, png, jpg, atau webp.',
+            'foto.max'               => 'Ukuran foto maksimal 2MB.',
         ]);
 
         if ($request->hasFile('foto')) {
@@ -148,11 +168,27 @@ class AdminController extends Controller
 
         $validatedData = $request->validate([
             'nisn'          => 'required|string|max:50|unique:siswa,nisn,' . $id,
+            'nis'           => 'required|string|max:50|unique:siswa,nis,' . $id,
             'nama'          => 'required|string|max:255',
-            'kelas_id'      => 'required',
-            'jurusan_id'    => 'required',
-            'jenis_kelamin' => 'nullable|in:L,P',
+            'kelas_id'      => 'required|integer|exists:kelas,id',
+            'jurusan_id'    => 'required|integer|exists:jurusan,id',
+            'jenis_kelamin' => 'required|in:L,P',
             'foto'          => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ], [
+            'nisn.required'          => 'NISN wajib diisi.',
+            'nisn.unique'            => 'NISN sudah terdaftar.',
+            'nis.required'           => 'NIS wajib diisi.',
+            'nis.unique'             => 'NIS sudah terdaftar.',
+            'nama.required'          => 'Nama siswa wajib diisi.',
+            'kelas_id.required'      => 'Kelas wajib dipilih.',
+            'kelas_id.exists'        => 'Kelas yang dipilih tidak valid.',
+            'jurusan_id.required'    => 'Jurusan wajib dipilih.',
+            'jurusan_id.exists'      => 'Jurusan yang dipilih tidak valid.',
+            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
+            'jenis_kelamin.in'       => 'Jenis kelamin harus L (Laki-laki) atau P (Perempuan).',
+            'foto.image'             => 'File foto harus berupa gambar.',
+            'foto.mimes'             => 'Format foto harus jpeg, png, jpg, atau webp.',
+            'foto.max'               => 'Ukuran foto maksimal 2MB.',
         ]);
 
         if ($request->hasFile('foto')) {
@@ -214,7 +250,7 @@ class AdminController extends Controller
             }
         }
 
-        $siswaList = Siswa::select('id', 'nama', 'nisn')->get();
+        $siswaList = Siswa::select('id', 'nama', 'nisn', 'nis')->get();
 
         return view('admin.barcode-generate', compact('siswaSelected', 'siswaList', 'qrCode'));
     }
@@ -252,17 +288,68 @@ class AdminController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'nik'  => 'required|string|max:50|unique:petugas,nik',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            'nama.required' => 'Nama petugas wajib diisi.',
+            'nik.required'  => 'NIK wajib diisi.',
+            'nik.unique'    => 'NIK ini sudah terdaftar.',
+            'foto.image'    => 'File harus berupa gambar.',
+            'foto.mimes'    => 'Format foto harus jpg, jpeg, png, atau webp.',
+            'foto.max'      => 'Ukuran foto maksimal 2MB.',
         ]);
+
+        $fotoPath = null;
+        if ($request->hasFile('foto')) {
+            $fotoPath = $request->file('foto')->store('petugas-foto', 'public');
+        }
 
         $petugas = Petugas::create([
             'nama'         => $request->nama,
             'nik'          => $request->nik,
             'barcode_code' => 'PTG-' . strtoupper(uniqid()),
+            'foto'         => $fotoPath,
         ]);
 
         return redirect()
             ->route('admin.petugas.barcode.generate', ['id' => $petugas->id])
             ->with('success', 'Petugas berhasil ditambahkan! Silakan unduh barcode petugas.');
+    }
+
+    public function petugasEdit($id)
+    {
+        $petugas = Petugas::findOrFail($id);
+        return view('admin.petugas-edit', compact('petugas'));
+    }
+
+    public function petugasUpdate(Request $request, $id)
+    {
+        $petugas = Petugas::findOrFail($id);
+
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'nik'  => 'required|string|max:50|unique:petugas,nik,' . $id,
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            'nama.required' => 'Nama petugas wajib diisi.',
+            'nik.required'  => 'NIK wajib diisi.',
+            'nik.unique'    => 'NIK ini sudah digunakan.',
+            'foto.image'    => 'File harus berupa gambar.',
+            'foto.mimes'    => 'Format foto harus jpg, jpeg, png, atau webp.',
+            'foto.max'      => 'Ukuran foto maksimal 2MB.',
+        ]);
+
+        if ($request->hasFile('foto')) {
+            if ($petugas->foto && Storage::disk('public')->exists($petugas->foto)) {
+                Storage::disk('public')->delete($petugas->foto);
+            }
+            $petugas->foto = $request->file('foto')->store('petugas-foto', 'public');
+        }
+
+        $petugas->nama = $request->nama;
+        $petugas->nik  = $request->nik;
+        $petugas->save();
+
+        return redirect()->route('admin.petugas.index')->with('success', 'Data petugas berhasil diperbarui!');
     }
 
     public function petugasBarcodeGenerate(Request $request)
@@ -305,6 +392,11 @@ class AdminController extends Controller
     public function petugasDestroy($id)
     {
         $petugas = Petugas::findOrFail($id);
+
+        if ($petugas->foto && Storage::disk('public')->exists($petugas->foto)) {
+            Storage::disk('public')->delete($petugas->foto);
+        }
+
         $petugas->delete();
 
         return redirect()->route('admin.petugas.index')->with('success', 'Petugas berhasil dihapus!');
@@ -318,15 +410,16 @@ class AdminController extends Controller
 
     public function presensiIndex()
     {
-        $today = Carbon::today();
+        $today = Carbon::today()->toDateString();
 
         $absensiHariIni = Absensi::with(['siswa.kelas', 'siswa.jurusan'])
-            ->whereDate('created_at', $today)
-            ->latest()
+            ->where('tanggal', $today)
+            ->latest('waktu_masuk')
             ->get();
 
         $riwayatAbsensi = Absensi::with(['siswa.kelas', 'siswa.jurusan'])
-            ->latest()
+            ->latest('tanggal')
+            ->latest('waktu_masuk')
             ->paginate(15);
 
         return view('admin.presensi', compact('absensiHariIni', 'riwayatAbsensi'));
@@ -339,100 +432,197 @@ class AdminController extends Controller
         ]);
 
         $siswa = Siswa::where('nisn', $request->nisn)->first();
-        $today = Carbon::today();
+        $today = Carbon::today()->toDateString();
+        $currentTime = Carbon::now()->toTimeString();
 
         $absensiAktif = Absensi::where('siswa_id', $siswa->id)
-            ->whereDate('created_at', $today)
-            ->whereNull('waktu_keluar')
+            ->where('tanggal', $today)
+            ->where('status', 'di_perpus')
             ->first();
 
         if ($absensiAktif) {
             $absensiAktif->update([
-                'waktu_keluar' => Carbon::now(),
+                'waktu_keluar' => $currentTime,
+                'status'       => 'selesai',
             ]);
 
             return redirect()->back()->with('success', 'Absen Keluar Berhasil! Terima kasih, ' . $siswa->nama);
-        } else {
-            Absensi::create([
-                'siswa_id'    => $siswa->id,
-                'waktu_masuk' => Carbon::now(),
-            ]);
-
-            return redirect()->back()->with('success', 'Absen Masuk Berhasil! Selamat datang, ' . $siswa->nama);
         }
+
+        Absensi::create([
+            'siswa_id'    => $siswa->id,
+            'tanggal'     => $today,
+            'waktu_masuk' => $currentTime,
+            'status'      => 'di_perpus',
+        ]);
+
+        return redirect()->back()->with('success', 'Absen Masuk Berhasil! Selamat datang, ' . $siswa->nama);
     }
 
     /*
     |--------------------------------------------------------------------------
-    | LAPORAN
+    | LAPORAN KUNJUNGAN (berdasarkan data presensi hasil scan barcode)
+    |--------------------------------------------------------------------------
+    | Satu halaman menampilkan 4 tab (harian/mingguan/bulanan/tahunan)
+    | sekaligus. Semua form filter pada tab manapun mengarah ke method ini
+    | (laporanIndex), sehingga keempat tab selalu terisi data yang relevan
+    | tanpa saling menimpa filter satu sama lain.
     |--------------------------------------------------------------------------
     */
 
-    public function laporanIndex()
+    public function laporanIndex(Request $request)
     {
-        return view('admin.laporan');
-    }
-
-    public function laporanHarian(Request $request)
-    {
+        // ==================== LAPORAN HARIAN ====================
         $tanggal = $request->get('tanggal', Carbon::today()->toDateString());
 
         $laporanHarian = Absensi::with(['siswa.kelas', 'siswa.jurusan'])
-            ->whereDate('created_at', $tanggal)
+            ->where('tanggal', $tanggal)
+            ->orderBy('waktu_masuk')
             ->get();
 
-        return view('admin.laporan', compact('laporanHarian', 'tanggal'));
+        $totalHarian = $laporanHarian->count();
+
+        // ==================== LAPORAN MINGGUAN ====================
+        // Input type="week" mengirim format "2026-W30"
+        if ($request->filled('minggu') && str_contains($request->minggu, '-W')) {
+            [$tahunMingguInput, $noMingguInput] = explode('-W', $request->minggu);
+            $awalMinggu = Carbon::now()->setISODate((int) $tahunMingguInput, (int) $noMingguInput)->startOfWeek();
+        } else {
+            $awalMinggu = Carbon::now()->startOfWeek();
+        }
+        $akhirMinggu = $awalMinggu->copy()->endOfWeek();
+
+        $dataMingguan = Absensi::select(
+                DB::raw('tanggal'),
+                DB::raw('count(*) as total')
+            )
+            ->whereBetween('tanggal', [$awalMinggu->toDateString(), $akhirMinggu->toDateString()])
+            ->groupBy('tanggal')
+            ->pluck('total', 'tanggal');
+
+        $laporanMingguan = [];
+        for ($d = $awalMinggu->copy(); $d->lte($akhirMinggu); $d->addDay()) {
+            $laporanMingguan[] = [
+                'hari'    => $d->translatedFormat('l'),
+                'tanggal' => $d->translatedFormat('d F Y'),
+                'total'   => (int) ($dataMingguan[$d->toDateString()] ?? 0),
+            ];
+        }
+        $totalMingguan = array_sum(array_column($laporanMingguan, 'total'));
+
+        // ==================== LAPORAN BULANAN (rekap per minggu) ====================
+        $bulanInput = $request->get('bulan', Carbon::now()->format('Y-m'));
+        [$tahunBulan, $bulanAngka] = array_pad(explode('-', $bulanInput), 2, Carbon::now()->format('m'));
+
+        $awalBulan = Carbon::createFromDate((int) $tahunBulan, (int) $bulanAngka, 1)->startOfMonth();
+        $akhirBulan = $awalBulan->copy()->endOfMonth();
+
+        $laporanBulanan = [];
+        $mingguKe = 1;
+        $cursor = $awalBulan->copy();
+
+        while ($cursor->lte($akhirBulan)) {
+            $mulaiPotong = $cursor->copy();
+            $selesaiPotong = $cursor->copy()->endOfWeek();
+
+            if ($selesaiPotong->gt($akhirBulan)) {
+                $selesaiPotong = $akhirBulan->copy();
+            }
+
+            $totalMinggu = Absensi::whereBetween('tanggal', [
+                $mulaiPotong->toDateString(),
+                $selesaiPotong->toDateString(),
+            ])->count();
+
+            $laporanBulanan[] = [
+                'minggu_ke' => $mingguKe,
+                'rentang'   => $mulaiPotong->translatedFormat('d M Y') . ' - ' . $selesaiPotong->translatedFormat('d M Y'),
+                'total'     => $totalMinggu,
+            ];
+
+            $mingguKe++;
+            $cursor = $selesaiPotong->copy()->addDay();
+        }
+        $totalBulanan = array_sum(array_column($laporanBulanan, 'total'));
+
+        // ==================== LAPORAN TAHUNAN ====================
+        $tahun = $request->get('tahun', Carbon::now()->year);
+
+        $dataTahunan = Absensi::select(
+                DB::raw('MONTH(tanggal) as bulan_angka'),
+                DB::raw('count(*) as total')
+            )
+            ->whereYear('tanggal', $tahun)
+            ->groupBy(DB::raw('MONTH(tanggal)'))
+            ->pluck('total', 'bulan_angka');
+
+        $namaBulan = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+        ];
+
+        $laporanTahunan = [];
+        foreach ($namaBulan as $angka => $nama) {
+            $laporanTahunan[] = [
+                'bulan' => $nama,
+                'total' => (int) ($dataTahunan[$angka] ?? 0),
+            ];
+        }
+        $totalTahunan = array_sum(array_column($laporanTahunan, 'total'));
+
+        // Daftar tahun yang tersedia untuk dropdown (berdasarkan data yang ada)
+        $tahunTersedia = Absensi::selectRaw('DISTINCT YEAR(tanggal) as tahun')
+            ->orderByDesc('tahun')
+            ->pluck('tahun');
+
+        if ($tahunTersedia->isEmpty()) {
+            $tahunTersedia = collect([Carbon::now()->year]);
+        }
+
+        return view('admin.laporan', compact(
+            'tanggal', 'laporanHarian', 'totalHarian',
+            'awalMinggu', 'akhirMinggu', 'laporanMingguan', 'totalMingguan',
+            'bulanInput', 'laporanBulanan', 'totalBulanan',
+            'tahun', 'laporanTahunan', 'totalTahunan', 'tahunTersedia'
+        ));
+    }
+
+    /**
+     * Alias supaya route lama (admin.laporan.harian / .mingguan / .bulanan / .tahunan)
+     * tetap berfungsi dan menampilkan halaman laporan lengkap yang sama,
+     * dengan tab yang relevan otomatis terisi sesuai filter yang dikirim.
+     */
+    public function laporanHarian(Request $request)
+    {
+        return $this->laporanIndex($request);
     }
 
     public function laporanMingguan(Request $request)
     {
-        $tahun = $request->get('tahun', Carbon::now()->year);
-        $minggu = $request->get('minggu', Carbon::now()->weekOfYear);
-
-        $laporanMingguan = Absensi::select(
-                DB::raw('DATE(created_at) as tanggal'),
-                DB::raw('count(*) as total')
-            )
-            ->whereYear('created_at', $tahun)
-            ->where(DB::raw('WEEK(created_at, 1)'), $minggu)
-            ->groupBy(DB::raw('DATE(created_at)'))
-            ->get();
-
-        return view('admin.laporan', compact('laporanMingguan', 'tahun', 'minggu'));
+        return $this->laporanIndex($request);
     }
 
     public function laporanBulanan(Request $request)
     {
-        $bulanInput = $request->get('bulan', Carbon::now()->format('Y-m'));
-        [$tahun, $bulan] = explode('-', $bulanInput);
-
-        $laporanBulanan = Absensi::with(['siswa.kelas', 'siswa.jurusan'])
-            ->whereYear('created_at', $tahun)
-            ->whereMonth('created_at', $bulan)
-            ->get();
-
-        return view('admin.laporan', compact('laporanBulanan', 'bulanInput'));
+        return $this->laporanIndex($request);
     }
 
     public function laporanTahunan(Request $request)
     {
-        $tahun = $request->get('tahun', Carbon::now()->year);
-
-        $laporanTahunan = Absensi::select(
-                DB::raw('MONTH(created_at) as bulan'),
-                DB::raw('count(*) as total')
-            )
-            ->whereYear('created_at', $tahun)
-            ->groupBy(DB::raw('MONTH(created_at)'))
-            ->get();
-
-        return view('admin.laporan', compact('laporanTahunan', 'tahun'));
+        return $this->laporanIndex($request);
     }
 
     public function statistikPengunjung()
     {
         return view('admin.presensi');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PROFIL ADMIN
+    |--------------------------------------------------------------------------
+    */
 
     public function profileIndex()
     {

@@ -17,7 +17,7 @@ class Jurusan extends Model
     ];
 
     /**
-     * Relasi ke Model Kelas (Has Many)
+     * Relasi ke Model Kelas (Satu Jurusan memiliki banyak Kelas)
      */
     public function kelas()
     {
@@ -25,7 +25,8 @@ class Jurusan extends Model
     }
 
     /**
-     * Relasi ke Model Siswa (Has Many)
+     * Relasi ke Model Siswa (Satu Jurusan memiliki banyak Siswa)
+     * Ditambahkan 'siswas' agar cocok dengan $chartJurusan = Jurusan::withCount('siswas')
      */
     public function siswa()
     {

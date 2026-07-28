@@ -9,14 +9,16 @@ class Absensi extends Model
 {
     use HasFactory;
 
-    protected $table = 'absensi';
+    // Sesuaikan dengan nama tabel di migration (absensis)
+    protected $table = 'absensis'; 
 
     protected $fillable = [
         'siswa_id',
+        'tanggal',
         'waktu_masuk',
         'waktu_keluar',
-        'tanggal',
-        'keterangan',
+        'status',        // Wajib ditambahkan agar fitur scan & update status berjalan
+        'keterangan',    // Tetap disimpan jika nanti ingin digunakan
     ];
 
     /**

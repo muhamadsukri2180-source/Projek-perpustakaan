@@ -13,6 +13,7 @@ class Siswa extends Authenticatable
 
     protected $fillable = [
         'nisn',
+        'nis',
         'nama',
         'kelas_id',
         'jurusan_id',
@@ -20,26 +21,19 @@ class Siswa extends Authenticatable
         'foto',
     ];
 
-    /**
-     * Relasi ke Model Kelas (Belongs To)
-     */
     public function kelas()
     {
         return $this->belongsTo(Kelas::class, 'kelas_id');
     }
 
-    /**
-     * Relasi ke Model Jurusan (Belongs To)
-     */
+
     public function jurusan()
     {
         return $this->belongsTo(Jurusan::class, 'jurusan_id');
     }
 
-    /**
-     * Relasi ke Model Absensi (Has Many)
-     */
-    public function absensi()
+
+    public function absensis()
     {
         return $this->hasMany(Absensi::class, 'siswa_id');
     }

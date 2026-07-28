@@ -9,7 +9,7 @@ class Kelas extends Model
 {
     use HasFactory;
 
-    protected $table = 'kelas';
+    protected $table = 'kelas'; // Sesuaikan dengan nama tabel kelas Anda jika beda
 
     protected $fillable = [
         'nama_kelas',
@@ -17,7 +17,7 @@ class Kelas extends Model
     ];
 
     /**
-     * Relasi ke Model Jurusan (Belongs To)
+     * Relasi balik ke Jurusan
      */
     public function jurusan()
     {
@@ -25,7 +25,7 @@ class Kelas extends Model
     }
 
     /**
-     * Relasi ke Model Siswa (Has Many)
+     * Relasi ke Model Siswa (Harus ada agar withCount('siswa') di controller berfungsi)
      */
     public function siswa()
     {

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Siswa;
 use App\Models\Petugas;
+use App\Models\Absensi;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -78,9 +80,8 @@ class AuthController extends Controller
 
     /**
      * Login via scan barcode.
-     * Mengecek dua kemungkinan sumber data:
-     * 1. Tabel Siswa (nisn / barcode_code) -> login sebagai guard 'siswa'
-     * 2. Tabel Petugas (barcode_code)      -> login sebagai guard 'petugas'
+     * Sekaligus mencatat presensi (masuk/keluar) untuk siswa,
+     * supaya data langsung muncul di halaman Presensi admin.
      */
     public function loginByBarcode(Request $request)
     {
@@ -88,7 +89,7 @@ class AuthController extends Controller
             'code' => 'required|string',
         ]);
 
-        $code = trim($request->code); // Membersihkan whitespace/linebreaks
+        $code = trim($request->code);
 
         // 1. Cek apakah barcode ini milik SISWA
         $siswa = Siswa::where('nisn', $code)
@@ -99,8 +100,13 @@ class AuthController extends Controller
             Auth::guard('siswa')->login($siswa);
             $request->session()->regenerate();
 
+            // ==== INI BAGIAN YANG SEBELUMNYA HILANG ====
+            $pesanAbsensi = $this->catatAbsensi($siswa);
+            // =============================================
+
             return response()->json([
                 'success'  => true,
+                'message'  => $pesanAbsensi,
                 'redirect' => route($this->dashboardMap['siswa']),
             ]);
         }
@@ -114,15 +120,52 @@ class AuthController extends Controller
 
             return response()->json([
                 'success'  => true,
+                'message'  => 'Login petugas berhasil.',
                 'redirect' => route($this->dashboardMap['petugas']),
             ]);
         }
 
-        // 3. Kalau dua-duanya tidak ketemu, barcode tidak dikenali
+        // 3. Kalau dua-duanya tidak ketemu
         return response()->json([
             'success' => false,
             'message' => 'Barcode tidak dikenali atau tidak terdaftar.',
         ]);
+    }
+
+    /**
+     * Mencatat tap masuk / tap keluar siswa ke tabel absensis.
+     * Logikanya sama persis dengan PresensiController::scanBarcode,
+     * supaya satu sumber kebenaran untuk data presensi.
+     */
+    protected function catatAbsensi(Siswa $siswa): string
+    {
+        $today       = Carbon::today()->toDateString();
+        $currentTime = Carbon::now()->toTimeString();
+
+        $absensiAktif = Absensi::where('siswa_id', $siswa->id)
+            ->where('tanggal', $today)
+            ->where('status', 'di_perpus')
+            ->first();
+
+        if ($absensiAktif) {
+            // Sudah tap masuk sebelumnya -> ini tap keluar
+            $absensiAktif->update([
+                'waktu_keluar' => $currentTime,
+                'status'       => 'selesai',
+            ]);
+
+            return 'Absen Keluar Berhasil! Terima kasih, ' . $siswa->nama;
+        }
+
+        // Belum ada record hari ini -> ini tap masuk
+        Absensi::create([
+            'siswa_id'    => $siswa->id,
+            'tanggal'     => $today,
+            'waktu_masuk' => $currentTime,
+            'status'      => 'di_perpus',
+        ]);
+
+        return 'Selamat Datang, ' . $siswa->nama . '!';
     }
 
     public function logout(Request $request)
@@ -136,7 +179,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // Sesuaikan nama route portal utama Anda (misal: 'portal' atau 'login')
         return redirect()->route('portal')->with('success', 'Anda berhasil logout.');
     }
 }

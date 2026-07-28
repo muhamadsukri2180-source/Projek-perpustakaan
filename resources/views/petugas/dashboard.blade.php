@@ -51,7 +51,7 @@
                        class="px-4 py-2 rounded-xl bg-white/20 text-white font-semibold shadow-sm border border-white/20 backdrop-blur-sm transition">
                         <i class="fa-solid fa-chart-pie mr-1.5 text-xs"></i> Dashboard
                     </a>
-                    <a href="{{ route('petugas.siswa') }}" 
+                    <a href="{{ route('petugas.siswa.index') }}" 
                        class="px-4 py-2 rounded-xl text-emerald-100 hover:text-white hover:bg-white/10 transition">
                         <i class="fa-solid fa-users mr-1.5 text-xs"></i> Data Siswa
                     </a>

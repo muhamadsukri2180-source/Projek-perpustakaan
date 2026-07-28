@@ -30,7 +30,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased">
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col justify-between">
 
     <nav class="animated-gradient text-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,8 +55,8 @@
                         <i class="fa-solid fa-users mr-1.5 text-xs"></i> Data Siswa
                     </a>
                     <a href="{{ Route::has('admin.petugas.index') ? route('admin.petugas.index') : '#' }}" 
-                        class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition {{ request()->routeIs('admin.petugas*') ? 'bg-white/20 font-bold text-white' : '' }}">
-                         <i class="fa-solid fa-user-tie mr-1.5 text-xs"></i> Kelola Petugas
+                       class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition">
+                        <i class="fa-solid fa-user-tie mr-1.5 text-xs"></i> Kelola Petugas
                     </a>
                     <a href="{{ Route::has('admin.presensi') ? route('admin.presensi') : '#' }}" 
                        class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition">
@@ -82,148 +82,110 @@
         </div>
     </nav>
 
-    <div class="min-h-screen flex flex-col justify-between">
-        
-        <main class="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full">
+    <main class="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto w-full flex-grow">
 
-            @if(session('success'))
-                <div class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-3">
-                    <i class="fa-solid fa-circle-check text-emerald-500 text-base"></i>
-                    <span>{{ session('success') }}</span>
-                </div>
-            @endif
-
-            <div class="mb-8 bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center gap-6">
-                <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-extrabold text-2xl flex items-center justify-center shadow-lg shadow-blue-200 shrink-0">
-                    {{ substr($admin->nama ?? 'A', 0, 1) }}
-                </div>
-                <div class="text-center sm:text-left flex-1">
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">
-                            {{ $admin->nama ?? 'Administrator' }}
-                        </h1>
-                        <span class="self-center sm:self-auto px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[11px] font-bold border border-blue-200">
-                            Super Admin
-                        </span>
+        <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-200">
+                        <i class="fa-solid fa-user-shield text-lg"></i>
                     </div>
-                    <p class="text-slate-500 mt-1 text-xs font-medium">
-                        {{ $admin->email ?? 'admin@perpustakaan.sch.id' }}
-                    </p>
-                    <p class="text-slate-400 mt-0.5 text-[11px]">
-                        Terdaftar sejak {{ isset($admin->created_at) ? $admin->created_at->format('d M Y') : 'Januari 2026' }}
-                    </p>
-                </div>
+                    Profil Admin
+                </h1>
+                <p class="text-slate-500 mt-1 text-sm font-medium">
+                    Identitas akun serta kode otentikasi unik untuk akses login cepat.
+                </p>
             </div>
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        @if(session('success'))
+            <div class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold flex items-center gap-3 shadow-sm">
+                <i class="fa-solid fa-circle-check text-emerald-500 text-base"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+        @endif
+
+        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                 
-                <div class="md:col-span-1 space-y-4">
-                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 px-2">
-                            Menu Pengaturan
-                        </h3>
-                        <div class="space-y-1">
-                            <a href="#informasi-akun" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-100">
-                                <i class="fa-solid fa-user-gear text-sm"></i> Detail Profil
-                            </a>
-                            <a href="#keamanan" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
-                                <i class="fa-solid fa-key text-sm"></i> Keamanan & Password
-                            </a>
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+                        <div class="relative shrink-0">
+                            <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center font-extrabold text-3xl shadow-lg shadow-blue-200 border-2 border-white">
+                                {{ strtoupper(substr($admin->nama ?? 'A', 0, 1)) }}
+                            </div>
+                            <span class="absolute -bottom-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm border border-white">
+                                Aktif
+                            </span>
+                        </div>
+
+                        <div class="text-center sm:text-left space-y-1">
+                            <span class="text-[11px] font-extrabold tracking-wider text-blue-600 uppercase bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100">
+                                Super Administrator
+                            </span>
+                            <h3 class="text-2xl font-extrabold text-slate-800 leading-tight pt-1">
+                                {{ $admin->nama ?? 'Administrator' }}
+                            </h3>
+                            <p class="text-xs font-semibold text-slate-400">
+                                Kode Login / Auth: <span class="text-slate-600 font-mono">{{ $admin->username ?? $admin->id_admin ?? 'ADM-001' }}</span>
+                            </p>
                         </div>
                     </div>
 
-                    <div class="bg-blue-600 rounded-2xl p-5 text-white shadow-md shadow-blue-200">
-                        <i class="fa-solid fa-shield-halved text-2xl text-blue-200 mb-2"></i>
-                        <h4 class="text-sm font-bold">Akses Administrator</h4>
-                        <p class="text-[11px] text-blue-100 mt-1 leading-relaxed">
-                            Sebagai admin, Anda memiliki hak akses penuh untuk mengelola master data siswa, kelas, presensi, serta laporan kunjungan.
-                        </p>
+                    <hr class="border-slate-100">
+
+                    <div class="bg-blue-50/60 rounded-2xl p-4 border border-blue-100/80 flex items-start gap-3">
+                        <i class="fa-solid fa-shield-halved text-blue-600 text-lg mt-0.5"></i>
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-800">Hak Akses Utama</h4>
+                            <p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                                Memiliki otoritas penuh atas pengelolaan master data siswa, petugas, presensi, serta pemantauan laporan sistem perpustakaan.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="md:col-span-2 space-y-6">
-
-                    <div id="informasi-akun" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                        <h2 class="text-base font-bold text-slate-800 pb-3 border-b border-slate-100 flex items-center gap-2">
-                            <i class="fa-solid fa-user-pen text-blue-600"></i> Informasi Profil
-                        </h2>
-
-                        <form action="{{ Route::has('admin.profile.update') ? route('admin.profile.update') : '#' }}" method="POST" class="mt-4 space-y-4">
-                            @csrf
-                            @method('PUT')
-
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1.5">Nama Lengkap</label>
-                                <input type="text" name="nama" value="{{ old('nama', $admin->nama ?? 'Admin Perpus') }}" required
-                                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1.5">Alamat Email</label>
-                                <input type="email" name="email" value="{{ old('email', $admin->email ?? 'admin@perpustakaan.sch.id') }}" required
-                                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1.5">Nomor Telepon / WhatsApp</label>
-                                <input type="text" name="telepon" value="{{ old('telepon', $admin->telepon ?? '081234567890') }}"
-                                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
-                            </div>
-
-                            <div class="pt-2 text-right">
-                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-blue-200 transition">
-                                    <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Perubahan
-                                </button>
-                            </div>
-                        </form>
+                <div class="lg:col-span-5 flex flex-col items-center justify-center p-6 bg-slate-50/60 rounded-2xl border border-slate-100/80 text-center space-y-5">
+                    
+                    <div class="space-y-1">
+                        <span class="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                            Barcode Login Admin
+                        </span>
+                        <p class="text-[11px] text-slate-400">
+                            Pindai QR Code ini untuk melakukan autentikasi login cepat
+                        </p>
                     </div>
 
-                    <div id="keamanan" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                        <h2 class="text-base font-bold text-slate-800 pb-3 border-b border-slate-100 flex items-center gap-2">
-                            <i class="fa-solid fa-lock text-amber-500"></i> Ubah Kata Sandi
-                        </h2>
-
-                        <form action="{{ Route::has('admin.profile.password') ? route('admin.profile.password') : '#' }}" method="POST" class="mt-4 space-y-4">
-                            @csrf
-                            @method('PUT')
-
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1.5">Password Saat Ini</label>
-                                <input type="password" name="current_password" required placeholder="••••••••"
-                                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                    <div class="p-4 bg-white border border-slate-200 rounded-2xl shadow-md inline-block transform hover:scale-105 transition duration-300">
+                        @if(isset($qrCode))
+                            {!! $qrCode !!}
+                        @else
+                            <div class="w-40 h-40 bg-slate-100 rounded-xl flex flex-col items-center justify-center text-slate-400 p-2">
+                                <i class="fa-solid fa-qrcode text-5xl mb-2 text-slate-300"></i>
+                                <span class="text-[10px] font-mono text-slate-500 break-all">
+                                    {{ $admin->username ?? $admin->id_admin ?? 'ADM-001' }}
+                                </span>
                             </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1.5">Password Baru</label>
-                                <input type="password" name="password" required placeholder="Minimal 8 karakter"
-                                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-slate-600 mb-1.5">Konfirmasi Password Baru</label>
-                                <input type="password" name="password_confirmation" required placeholder="Ulangi password baru"
-                                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
-                            </div>
-
-                            <div class="pt-2 text-right">
-                                <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-amber-200 transition">
-                                    <i class="fa-solid fa-shield-cat mr-1"></i> Update Password
-                                </button>
-                            </div>
-                        </form>
+                        @endif
                     </div>
+
+                    @if(Route::has('admin.profile.barcode.download'))
+                        <a href="{{ route('admin.profile.barcode.download') }}" 
+                           class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-md shadow-blue-200 transition duration-200">
+                            <i class="fa-solid fa-download text-sm"></i> Unduh Barcode Login
+                        </a>
+                    @endif
 
                 </div>
 
             </div>
+        </div>
 
-        </main>
+    </main>
 
-        <footer class="bg-white border-t border-slate-100 py-4 text-center text-xs text-slate-400 mt-8">
-            <p>&copy; {{ date('Y') }} Sistem Presensi Perpustakaan Digital. All rights reserved.</p>
-        </footer>
-
-    </div>
+    <footer class="bg-white border-t border-slate-100 py-4 text-center text-xs text-slate-400 mt-8">
+        <p>&copy; {{ date('Y') }} Sistem Presensi Perpustakaan Digital. All rights reserved.</p>
+    </footer>
 
 </body>
 </html>

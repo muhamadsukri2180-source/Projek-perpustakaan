@@ -122,15 +122,43 @@
 
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 
-                <form action="{{ Route::has('admin.siswa.index') ? route('admin.siswa.index') : (Route::has('admin.siswa') ? route('admin.siswa') : '#') }}" method="GET" class="p-4 sm:p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div class="relative w-full md:w-80">
+                <form action="{{ Route::has('admin.siswa.index') ? route('admin.siswa.index') : (Route::has('admin.siswa') ? route('admin.siswa') : '#') }}" method="GET" class="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                    
+                    <div class="relative w-full lg:w-72">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau NISN..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, NISN, atau NIS..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-semibold transition">
-                            <i class="fa-solid fa-filter mr-1"></i> Filter
+
+                    <div class="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+                        <select name="kelas_id" onchange="this.form.submit()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                            <option value="">-- Semua Kelas --</option>
+                            @forelse($kelasList ?? [] as $kelas)
+                                <option value="{{ $kelas->id }}" {{ request('kelas_id') == $kelas->id ? 'selected' : '' }}>
+                                    {{ $kelas->nama_kelas ?? $kelas->nama }}
+                                </option>
+                            @empty
+                            @endforelse
+                        </select>
+
+                        <select name="jurusan_id" onchange="this.form.submit()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                            <option value="">-- Semua Jurusan --</option>
+                            @forelse($jurusanList ?? [] as $jurusan)
+                                <option value="{{ $jurusan->id }}" {{ request('jurusan_id') == $jurusan->id ? 'selected' : '' }}>
+                                    {{ $jurusan->nama_jurusan ?? $jurusan->nama ?? $jurusan->kode_jurusan }}
+                                </option>
+                            @empty
+                            @endforelse
+                        </select>
+
+                        <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-filter text-xs"></i> Filter
                         </button>
+
+                        @if(request('search') || request('kelas_id') || request('jurusan_id'))
+                            <a href="{{ Route::has('admin.siswa.index') ? route('admin.siswa.index') : (Route::has('admin.siswa') ? route('admin.siswa') : '#') }}" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1">
+                                <i class="fa-solid fa-rotate-left text-xs"></i> Reset Filter
+                            </a>
+                        @endif
                     </div>
                 </form>
 
@@ -139,7 +167,8 @@
                         <thead class="bg-slate-50 text-slate-400 uppercase text-[11px] font-bold tracking-wider">
                             <tr>
                                 <th class="py-3.5 px-6">Siswa</th>
-                                <th class="py-3.5 px-6">NISN / NIS</th>
+                                <th class="py-3.5 px-6">NISN</th>
+                                <th class="py-3.5 px-6">NIS</th>
                                 <th class="py-3.5 px-6">Kelas & Jurusan</th>
                                 <th class="py-3.5 px-6">Jenis Kelamin</th>
                                 <th class="py-3.5 px-6 text-center">Aksi</th>
@@ -166,6 +195,11 @@
                                         {{ $siswa->nisn }}
                                     </span>
                                 </td>
+                                <td class="py-4 px-6 font-medium text-slate-700">
+                                    <span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-600 border border-slate-200/60">
+                                        {{ $siswa->nis ?? '-' }}
+                                    </span>
+                                </td>
                                 <td class="py-4 px-6">
                                     <span class="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-xs font-semibold border border-blue-100">
                                         {{ $siswa->kelas->nama_kelas ?? $siswa->kelas->nama ?? 'Kelas -' }} - {{ $siswa->jurusan->nama_jurusan ?? $siswa->jurusan->nama ?? $siswa->jurusan->kode_jurusan ?? '-' }}
@@ -176,21 +210,16 @@
                                 </td>
                                 <td class="py-4 px-6 text-center">
                                     <div class="flex items-center justify-center gap-1.5">
-                                        <a href="{{ Route::has('admin.siswa.show') ? route('admin.siswa.show', $siswa->id) : '#' }}" 
-                                           title="Detail Siswa"
-                                           class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 flex items-center justify-center text-xs transition">
-                                            <i class="fa-solid fa-eye"></i>
-                                        </a>
-
+                                        
                                         <a href="{{ Route::has('admin.siswa.edit') ? route('admin.siswa.edit', $siswa->id) : '#' }}" 
                                            title="Edit Siswa"
-                                           class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-amber-50 text-slate-600 hover:text-amber-600 flex items-center justify-center text-xs transition">
+                                           class="w-8 h-8 rounded-lg bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center text-xs shadow-sm transition">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
 
                                         <a href="{{ Route::has('admin.barcode.generate') ? route('admin.barcode.generate', ['id' => $siswa->id]) : '#' }}" 
                                            title="Generate Barcode"
-                                           class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 flex items-center justify-center text-xs transition">
+                                           class="w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center text-xs shadow-sm transition">
                                             <i class="fa-solid fa-qrcode"></i>
                                         </a>
 
@@ -199,18 +228,19 @@
                                             @method('DELETE')
                                             <button type="submit" 
                                                     title="Hapus Siswa"
-                                                    class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 flex items-center justify-center text-xs transition">
+                                                    class="w-8 h-8 rounded-lg bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-xs shadow-sm transition">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
                                         </form>
+
                                     </div>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="py-8 text-center text-slate-400 text-xs">
+                                <td colspan="6" class="py-8 text-center text-slate-400 text-xs">
                                     <i class="fa-solid fa-folder-open text-2xl mb-2 block"></i>
-                                    Belum ada data siswa.
+                                    Belum ada data siswa yang sesuai filter.
                                 </td>
                             </tr>
                             @endforelse
@@ -220,7 +250,7 @@
 
                 @if(isset($siswaList) && method_exists($siswaList, 'links'))
                 <div class="p-4 border-t border-slate-100">
-                    {{ $siswaList->links() }}
+                    {{ $siswaList->appends(request()->query())->links() }}
                 </div>
                 @endif
 
@@ -250,44 +280,59 @@
         <form action="{{ route('admin.siswa.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
             @csrf
 
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">NISN / NIS <span class="text-rose-500">*</span></label>
-                <input type="text" name="nisn" required placeholder="Contoh: 0012345678" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">NISN <span class="text-rose-500">*</span></label>
+                    <input type="text" name="nisn" value="{{ old('nisn') }}" required placeholder="Contoh: 0012345678" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">NIS <span class="text-rose-500">*</span></label>
+                    <input type="text" name="nis" value="{{ old('nis') }}" required placeholder="Contoh: 21221001" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                </div>
             </div>
 
             <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Lengkap <span class="text-rose-500">*</span></label>
-                <input type="text" name="nama" required placeholder="Masukkan nama siswa" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                <input type="text" name="nama" value="{{ old('nama') }}" required placeholder="Masukkan nama siswa" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <div class="grid grid-cols-2 gap-3">
-    <div class="grid grid-cols-2 gap-3">
-    <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Kelas <span class="text-rose-500">*</span></label>
-        <select name="kelas_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
-            <option value="">-- Pilih Kelas --</option>
-            <option value="1" {{ old('kelas_id') == '1' ? 'selected' : '' }}>X</option>
-            <option value="2" {{ old('kelas_id') == '2' ? 'selected' : '' }}>XI</option>
-            <option value="3" {{ old('kelas_id') == '3' ? 'selected' : '' }}>XII</option>
-        </select>
-    </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Kelas <span class="text-rose-500">*</span></label>
+                    <select name="kelas_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                        <option value="">-- Pilih Kelas --</option>
+                        @forelse($kelasList ?? [] as $kelas)
+                            <option value="{{ $kelas->id }}" {{ old('kelas_id') == $kelas->id ? 'selected' : '' }}>
+                                {{ $kelas->nama_kelas ?? $kelas->nama }}
+                            </option>
+                        @empty
+                            <option value="" disabled>Belum ada data kelas</option>
+                        @endforelse
+                    </select>
+                </div>
 
-    <div>
-        <label class="block text-xs font-semibold text-slate-600 mb-1">Jurusan <span class="text-rose-500">*</span></label>
-        <select name="jurusan_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
-            <option value="">-- Pilih Jurusan --</option>
-            <option value="1" {{ old('jurusan_id') == '1' ? 'selected' : '' }}>RPL 1</option>
-            <option value="2" {{ old('jurusan_id') == '2' ? 'selected' : '' }}>RPL 2</option>
-            <option value="3" {{ old('jurusan_id') == '3' ? 'selected' : '' }}>BR 1</option>
-            <option value="4" {{ old('jurusan_id') == '4' ? 'selected' : '' }}>BR 2</option>
-            <option value="5" {{ old('jurusan_id') == '5' ? 'selected' : '' }}>MP</option>
-            <option value="6" {{ old('jurusan_id') == '6' ? 'selected' : '' }}>AK 1</option>
-            <option value="7" {{ old('jurusan_id') == '7' ? 'selected' : '' }}>AK 2</option>
-        </select>
-    </div>
-</div>
-</div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Jurusan <span class="text-rose-500">*</span></label>
+                    <select name="jurusan_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                        <option value="">-- Pilih Jurusan --</option>
+                        @forelse($jurusanList ?? [] as $jurusan)
+                            <option value="{{ $jurusan->id }}" {{ old('jurusan_id') == $jurusan->id ? 'selected' : '' }}>
+                                {{ $jurusan->nama_jurusan ?? $jurusan->nama ?? $jurusan->kode_jurusan }}
+                            </option>
+                        @empty
+                            <option value="" disabled>Belum ada data jurusan</option>
+                        @endforelse
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Jenis Kelamin <span class="text-rose-500">*</span></label>
+                <select name="jenis_kelamin" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+                    <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-Laki</option>
+                    <option value="P" {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan</option>
+                </select>
+            </div>
 
             <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1">Foto Siswa (Opsional)</label>
@@ -314,7 +359,6 @@
         document.getElementById('modalTambahSiswa').classList.add('hidden');
     }
     
-    // Otomatis buka modal kalau ada error input validasi dari backend
     @if ($errors->any())
         openModalTambah();
     @endif

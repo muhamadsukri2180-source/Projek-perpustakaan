@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('nama');
             $table->string('nik')->unique();
             $table->string('barcode_code')->unique()->nullable();
+            $table->string('foto')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
