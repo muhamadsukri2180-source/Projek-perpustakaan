@@ -48,15 +48,36 @@
                     <a href="{{ Route::has('admin.siswa.index') ? route('admin.siswa.index') : '#' }}" class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition">
                         <i class="fa-solid fa-users mr-1.5 text-xs"></i> Data Siswa
                     </a>
+                        <a href="{{ Route::has('admin.petugas.index') ? route('admin.petugas.index') : '#' }}" 
+                        class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition {{ request()->routeIs('admin.petugas*') ? 'bg-white/20 font-bold text-white' : '' }}">
+                         <i class="fa-solid fa-user-tie mr-1.5 text-xs"></i> Kelola Petugas
+                    </a>
                     <a href="{{ Route::has('admin.presensi') ? route('admin.presensi') : '#' }}" class="px-4 py-2 rounded-xl bg-white/20 text-white font-semibold shadow-sm border border-white/20 backdrop-blur-sm transition">
                         <i class="fa-solid fa-clipboard-user mr-1.5 text-xs"></i> Presensi
                     </a>
+                                        <a href="{{ Route::has('admin.laporan') ? route('admin.laporan.harian') : '#' }}" 
+                       class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition">
+                        <i class="fa-solid fa-file-lines mr-1.5 text-xs"></i> Laporan
+                    </a>
                 </div>
 
-                <div class="flex items-center gap-3">
-                    <span class="text-xs font-bold hidden sm:inline">Admin</span>
-                    <div class="w-9 h-9 rounded-full bg-white text-blue-600 font-bold flex items-center justify-center shadow-md">A</div>
+                 <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex flex-col text-right">
+                        <span class="text-xs font-bold leading-tight">Admin</span>
+                    </div>
+
+                    <a href="{{ Route::has('admin.profile') ? route('admin.profile') : '#' }}" 
+                       title="Lihat Profil Admin" 
+                       class="w-9 h-9 rounded-full bg-white text-blue-600 font-bold flex items-center justify-center text-sm shadow-md ring-2 ring-white/30 hover:ring-white hover:scale-105 active:scale-95 transition-all duration-200 group">
+                        <span class="group-hover:text-blue-700">A</span>
+                    </a>
                 </div>
+                <form action="{{ route('logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" title="Keluar" class="w-9 h-9 rounded-xl text-white flex items-center justify-center text-sm ">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </form>
             </div>
         </div>
     </nav>
@@ -73,10 +94,7 @@
                 </h1>
                 <p class="text-slate-500 mt-1 text-sm font-medium">Data harian di-reset otomatis setiap jam 00:00 WIB.</p>
             </div>
-            
-            <button @click="modalScan = true; setTimeout(() => $refs.scanInput.focus(), 200)" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg shadow-emerald-200 transition flex items-center gap-2">
-                <i class="fa-solid fa-barcode text-base"></i> Scan Barcode Masuk / Keluar
-            </button>
+        
         </div>
 
         <div class="bg-white rounded-2xl p-2 shadow-sm border border-slate-200/80 mb-6 overflow-x-auto flex gap-2">

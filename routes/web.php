@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\PresensiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,15 +18,6 @@ Route::post('/login/{role}', [AuthController::class, 'authenticate'])->name('log
 Route::post('/login-scan', [AuthController::class, 'loginByBarcode'])->name('login.scan');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes - ADMIN GROUP
-|--------------------------------------------------------------------------
-| Semua CRUD di sini murni memakai AdminController milik admin sendiri.
-| Tidak lagi berbagi controller dengan grup petugas, supaya tidak ada
-| lagi kemungkinan admin "menabrak" tampilan/alur milik petugas.
-|--------------------------------------------------------------------------
-*/
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
@@ -54,9 +46,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/petugas/barcode', [AdminController::class, 'petugasBarcodeGenerate'])->name('petugas.barcode.generate');
     Route::get('/petugas/barcode/{id}/download', [AdminController::class, 'petugasBarcodeDownload'])->name('petugas.barcode.download');
 
-    // --- PRESENSI ---
-    Route::get('/presensi', [AdminController::class, 'presensiIndex'])->name('presensi');
-    Route::post('/presensi/scan', [AdminController::class, 'presensiScan'])->name('presensi.scan');
+ // --- PRESENSI (Menggunakan PresensiController) ---
+Route::get('/presensi', [PresensiController::class, 'index'])->name('presensi');
+Route::post('/presensi/scan', [PresensiController::class, 'scanBarcode'])->name('presensi.scan');
 
     // --- LAPORAN ---
     Route::get('/laporan', [AdminController::class, 'laporanIndex'])->name('laporan');
@@ -70,25 +62,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/barcode/generate', [AdminController::class, 'barcodeGenerate'])->name('barcode.generate');
     Route::get('/barcode/download/{id}', [AdminController::class, 'barcodeDownload'])->name('barcode.download');
     Route::get('/statistik/pengunjung', [AdminController::class, 'statistikPengunjung'])->name('statistik.pengunjung');
-
-    // --- PROFIL ADMIN ---
-    Route::get('/profile', [AdminController::class, 'profileIndex'])->name('profile');
-    Route::put('/profile/update', [AdminController::class, 'profileUpdate'])->name('profile.update');
-    Route::put('/profile/password', [AdminController::class, 'profilePassword'])->name('profile.password');
 });
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes - PETUGAS GROUP
-|--------------------------------------------------------------------------
-| Semua CRUD di sini murni memakai PetugasController milik petugas sendiri
-| (siswaIndex, siswaCreate, siswaStore, siswaShow, siswaEdit, siswaUpdate,
-| siswaDestroy, barcodeGenerate, barcodeDownload, presensiIndex, dst).
-| Ini kunci perbaikannya: sebelumnya route ini nyasar ke SiswaController
-| yang dipakai bareng-bareng dengan admin, makanya tampilan yang muncul
-| jadi tampilan admin walau yang login petugas.
-|--------------------------------------------------------------------------
-*/
 Route::prefix('petugas')->name('petugas.')->group(function () {
     Route::get('/dashboard', [PetugasController::class, 'dashboard'])->name('dashboard');
 
@@ -129,13 +103,22 @@ Route::prefix('petugas')->name('petugas.')->group(function () {
     // --- STATISTIK PENGUNJUNG ---
     Route::get('/statistik/pengunjung', [PetugasController::class, 'statistikPengunjung'])->name('statistik.pengunjung');
 });
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes - SISWA GROUP (login role: siswa, bukan data master siswa)
-|--------------------------------------------------------------------------
-*/
 Route::prefix('siswa')->name('siswa.')->group(function () {
     Route::get('/dashboard', [SiswaController::class, 'dashboard'])->name('dashboard');
     Route::get('/riwayat', [SiswaController::class, 'riwayat'])->name('riwayat');
 });
+    Route::get('/profile', [AdminController::class, 'profileIndex'])->name('admin.profile');
+    Route::get('/profile/download-barcode', [AdminController::class, 'profileBarcodeDownload'])->name('admin.profile.barcode.download');
+    Route::post('/profile/update', [AdminController::class, 'profileUpdate'])->name('admin.profile.update');
+    Route::post('/profile/password', [AdminController::class, 'profilePassword'])->name('admin.profile.password');
+
+    Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/profile', [AdminController::class, 'profileIndex'])->name('admin.profile');
+    Route::get('/admin/profile/download-barcode', [AdminController::class, 'profileBarcodeDownload'])->name('admin.profile.barcode.download');
+});
+
+// routes/web.php
+Route::get('/admin/profile/barcode/download', [AdminController::class, 'profileBarcodeDownload'])
+    ->name('admin.profile.barcode.download');
+
+    Route::post('/login/{role}', [AuthController::class, 'authenticate'])->name('login.authenticate');

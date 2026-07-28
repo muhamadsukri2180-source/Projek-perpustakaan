@@ -77,6 +77,12 @@
                         <span class="group-hover:text-emerald-700">P</span>
                     </a>
                 </div>
+                <form action="{{ route('logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" title="Keluar" class="w-9 h-9 rounded-xl text-white flex items-center justify-center text-sm ">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </form>
 
             </div>
         </div>

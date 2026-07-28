@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Siswa;
 use App\Models\Petugas;
 use App\Models\Absensi;
+use App\Models\User;
 use Carbon\Carbon;
 
 class AuthController extends Controller
@@ -23,11 +25,17 @@ class AuthController extends Controller
         'siswa'   => 'siswa.dashboard',
     ];
 
+    /**
+     * Halaman portal awal (pilihan role / landing scan barcode).
+     */
     public function index()
     {
         return view('auth.login');
     }
 
+    /**
+     * Halaman login per-role (admin / petugas / siswa).
+     */
     public function loginRole($role)
     {
         $validRoles = ['siswa', 'petugas', 'admin'];
@@ -39,44 +47,62 @@ class AuthController extends Controller
         return view('auth.login', compact('role'));
     }
 
+    /**
+     * Proses login manual (email & password) untuk admin/petugas.
+     * Siswa tidak diperbolehkan login manual, hanya lewat scan barcode.
+     */
     public function authenticate(Request $request, $role)
-    {
-        $validRoles = ['siswa', 'petugas', 'admin'];
+{
+    $validRoles = ['siswa', 'petugas', 'admin'];
 
-        if (!in_array($role, $validRoles)) {
-            abort(404);
-        }
+    if (!in_array($role, $validRoles)) {
+        abort(404);
+    }
 
-        if ($role === 'siswa') {
-            return redirect()
-                ->route('login.role', ['role' => 'siswa'])
-                ->with('error', 'Siswa hanya bisa login menggunakan scan barcode.');
-        }
+    // Hanya admin yang boleh login manual (email & password).
+    // Siswa & petugas wajib login lewat scan barcode.
+    if (in_array($role, ['siswa', 'petugas'])) {
+        return redirect()
+            ->route('login.role', ['role' => $role])
+            ->with('error', ucfirst($role) . ' hanya bisa login menggunakan scan barcode.');
+    }
 
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required|string',
-        ]);
+    $request->validate([
+        'email'    => 'required|email',
+        'password' => 'required|string',
+    ], [
+        'email.required'    => 'Email wajib diisi.',
+        'email.email'       => 'Format email tidak valid.',
+        'password.required' => 'Password wajib diisi.',
+    ]);
 
-        $guard = $this->guardMap[$role];
+    $guard = $this->guardMap[$role]; // otomatis 'web' karena hanya admin yang sampai sini
 
-        if (Auth::guard($guard)->attempt([
+    try {
+        $attempt = Auth::guard($guard)->attempt([
             'email'    => $request->email,
             'password' => $request->password,
-        ], $request->boolean('remember'))) {
+        ], $request->boolean('remember'));
 
+        if ($attempt) {
             $request->session()->regenerate();
 
             return redirect()
                 ->route($this->dashboardMap[$role])
                 ->with('success', 'Login berhasil, selamat datang!');
         }
-
+    } catch (\RuntimeException $e) {
         return redirect()
             ->route('login.role', ['role' => $role])
-            ->withErrors(['email' => 'Email atau password salah.'])
+            ->withErrors(['email' => 'Akun ini bermasalah, silakan hubungi administrator sistem.'])
             ->withInput($request->only('email'));
     }
+
+    return redirect()
+        ->route('login.role', ['role' => $role])
+        ->withErrors(['email' => 'Email atau password salah.'])
+        ->withInput($request->only('email'));
+}
 
     /**
      * Login via scan barcode.
@@ -100,9 +126,7 @@ class AuthController extends Controller
             Auth::guard('siswa')->login($siswa);
             $request->session()->regenerate();
 
-            // ==== INI BAGIAN YANG SEBELUMNYA HILANG ====
             $pesanAbsensi = $this->catatAbsensi($siswa);
-            // =============================================
 
             return response()->json([
                 'success'  => true,
@@ -125,7 +149,21 @@ class AuthController extends Controller
             ]);
         }
 
-        // 3. Kalau dua-duanya tidak ketemu
+        // 3. Kalau bukan siswa/petugas, cek apakah barcode ini milik ADMIN
+        $admin = User::where('barcode_code', $code)->first();
+
+        if ($admin) {
+            Auth::guard('web')->login($admin);
+            $request->session()->regenerate();
+
+            return response()->json([
+                'success'  => true,
+                'message'  => 'Login admin berhasil, selamat datang ' . $admin->name . '!',
+                'redirect' => route($this->dashboardMap['admin']),
+            ]);
+        }
+
+        // 4. Kalau tiga-tiganya tidak ketemu
         return response()->json([
             'success' => false,
             'message' => 'Barcode tidak dikenali atau tidak terdaftar.',
@@ -168,6 +206,9 @@ class AuthController extends Controller
         return 'Selamat Datang, ' . $siswa->nama . '!';
     }
 
+    /**
+     * Logout dari guard manapun yang sedang aktif (admin/petugas/siswa).
+     */
     public function logout(Request $request)
     {
         foreach (['web', 'petugas', 'siswa'] as $guard) {

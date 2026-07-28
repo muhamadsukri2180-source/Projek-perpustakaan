@@ -625,15 +625,22 @@ class AdminController extends Controller
     */
 
     public function profileIndex()
-    {
-        $admin = Auth::user();
-        return view('admin.profile', compact('admin'));
+{
+    $admin = Auth::user();
+
+    // Kalau admin belum punya barcode_code, generate otomatis sekali
+    if (empty($admin->barcode_code)) {
+        $admin->barcode_code = 'ADM-' . strtoupper(uniqid());
+        $admin->save();
     }
 
-    public function profile()
-    {
-        return $this->profileIndex();
-    }
+    $qrCode = QrCode::format('svg')
+        ->size(300)
+        ->margin(1)
+        ->generate($admin->barcode_code);
+
+    return view('admin.profile', compact('admin', 'qrCode'));
+}
 
     public function profileUpdate(Request $request)
     {
@@ -671,4 +678,20 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Password berhasil diubah!');
     }
+    // AdminController.php
+public function profileBarcodeDownload()
+{
+    $admin = Auth::user();
+
+    $qrImage = QrCode::format('svg')
+        ->size(500)
+        ->margin(1)
+        ->generate($admin->barcode_code);
+
+    $filename = 'barcode-admin-' . $admin->barcode_code . '.svg';
+
+    return response($qrImage)
+        ->header('Content-Type', 'image/svg+xml')
+        ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+}
 }

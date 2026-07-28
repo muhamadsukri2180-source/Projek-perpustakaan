@@ -76,6 +76,12 @@
                         <span class="group-hover:text-emerald-700">{{ strtoupper(substr(auth()->user()->name ?? 'P', 0, 1)) }}</span>
                     </a>
                 </div>
+                <form action="{{ route('logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" title="Keluar" class="w-9 h-9 rounded-xl text-white flex items-center justify-center text-sm ">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </form>
 
             </div>
         </div>
@@ -102,9 +108,6 @@
                         <i class="fa-regular fa-calendar-check text-emerald-600"></i>
                         {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
                     </span>
-                    <a href="{{ route('petugas.scan') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-md shadow-emerald-200 transition duration-200 flex items-center gap-2">
-                        <i class="fa-solid fa-qrcode"></i> Scan Masuk / Keluar
-                    </a>
                 </div>
             </div>
 

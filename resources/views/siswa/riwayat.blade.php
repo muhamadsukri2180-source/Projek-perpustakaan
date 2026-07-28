@@ -53,24 +53,19 @@
                        class="px-4 py-2 rounded-xl bg-white/20 text-white font-semibold shadow-sm border border-white/30 backdrop-blur-md transition">
                         <i class="fa-solid fa-clock-rotate-left mr-1.5 text-xs"></i> Riwayat Kunjungan
                     </a>
-
-                    <a href="{{ Route::has('siswa.profile') ? route('siswa.profile') : '#' }}"
-                       class="px-4 py-2 rounded-xl text-white/90 hover:bg-white/10 hover:text-white transition">
-                        <i class="fa-solid fa-id-card mr-1.5 text-xs"></i> Profil Saya
-                    </a>
                 </div>
 
                 <div class="flex items-center gap-3">
                     <div class="hidden sm:flex flex-col text-right">
-                        <span class="text-xs font-bold leading-tight drop-shadow-sm">{{ auth()->user()->nama ?? auth()->user()->name ?? 'Siswa' }}</span>
+                        <span class="text-xs font-bold leading-tight drop-shadow-sm">{{ $siswa->nama ?? $siswa->name ?? 'Siswa' }}</span>
                         <span class="text-[10px] text-sky-100 font-medium">Siswa Aktif</span>
                     </div>
 
                     <a href="{{ Route::has('siswa.profile') ? route('siswa.profile') : '#' }}" class="w-9 h-9 rounded-full bg-white text-sky-600 font-bold flex items-center justify-center text-sm shadow-md ring-2 ring-white/40 overflow-hidden">
-                        @if(auth()->user()->foto ?? false)
-                            <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="Foto Profile" class="w-full h-full object-cover">
+                        @if($siswa->foto ?? false)
+                            <img src="{{ asset('storage/' . $siswa->foto) }}" alt="Foto Profile" class="w-full h-full object-cover">
                         @else
-                            <span>{{ strtoupper(substr(auth()->user()->nama ?? auth()->user()->name ?? 'S', 0, 1)) }}</span>
+                            <span>{{ strtoupper(substr($siswa->nama ?? $siswa->name ?? 'S', 0, 1)) }}</span>
                         @endif
                     </a>
 

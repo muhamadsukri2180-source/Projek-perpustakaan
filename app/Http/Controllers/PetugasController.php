@@ -549,12 +549,39 @@ class PetugasController extends Controller
     |--------------------------------------------------------------------------
     | PROFIL PETUGAS
     |--------------------------------------------------------------------------
+    | PENTING: pakai Auth::guard('petugas') -- BUKAN Auth::user() polos --
+    | karena akun petugas login lewat guard 'petugas' ke tabel master
+    | 'petugas' (kolom nik, nama, foto), sama seperti admin generate
+    | barcode di petugas.barcode-generate. Kalau dulu pakai Auth::user()
+    | biasa, itu cek guard default 'web' yang isinya kosong untuk akun
+    | petugas -> makanya muncul "Attempt to read property id on null".
+    |
+    | Barcode yang ditampilkan di sini SENGAJA dibuat dari data yang SAMA
+    | (nik) dengan yang dipakai admin di barcodeGenerate()/barcodeDownload()
+    | untuk siswa -- artinya barcode-nya identik/konsisten, bukan barcode
+    | baru yang berbeda dari yang sudah admin buat.
+    |--------------------------------------------------------------------------
     */
 
     public function profileIndex()
     {
-        $petugas = Auth::user();
-        return view('petugas.profile', compact('petugas'));
+        /** @var \App\Models\Petugas $petugas */
+        $petugas = Auth::guard('petugas')->user();
+
+        if (!$petugas) {
+            return redirect()->route('login')->with('error', 'Sesi login petugas tidak ditemukan, silakan login kembali.');
+        }
+
+        $qrCode = null;
+
+        if (!empty($petugas->nik)) {
+            $qrCode = QrCode::format('svg')
+                ->size(220)
+                ->margin(1)
+                ->generate($petugas->nik);
+        }
+
+        return view('petugas.profile', compact('petugas', 'qrCode'));
     }
 
     public function profile()
@@ -565,16 +592,20 @@ class PetugasController extends Controller
     public function profileUpdate(Request $request)
     {
         /** @var \App\Models\Petugas $petugas */
-        $petugas = Auth::user();
+        $petugas = Auth::guard('petugas')->user();
+
+        if (!$petugas) {
+            return redirect()->route('login')->with('error', 'Sesi login petugas tidak ditemukan, silakan login kembali.');
+        }
 
         $request->validate([
             'nama'    => 'required|string|max:255',
-            'email'   => 'required|email|max:255|unique:users,email,' . $petugas->id,
+            'email'   => 'required|email|max:255|unique:petugas,email,' . $petugas->id,
             'telepon' => 'nullable|string|max:20',
         ]);
 
         $petugas->update([
-            'name'    => $request->nama,
+            'nama'    => $request->nama,
             'email'   => $request->email,
             'telepon' => $request->telepon,
         ]);
@@ -590,7 +621,11 @@ class PetugasController extends Controller
         ]);
 
         /** @var \App\Models\Petugas $petugas */
-        $petugas = Auth::user();
+        $petugas = Auth::guard('petugas')->user();
+
+        if (!$petugas) {
+            return redirect()->route('login')->with('error', 'Sesi login petugas tidak ditemukan, silakan login kembali.');
+        }
 
         if (!Hash::check($request->password_lama, $petugas->password)) {
             return redirect()->back()->withErrors(['password_lama' => 'Password lama tidak sesuai!']);
@@ -601,5 +636,30 @@ class PetugasController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Password berhasil diubah!');
+    }
+
+    /**
+     * Unduh barcode/QR code milik petugas yang sedang login.
+     * Isi barcode = kolom "nik", persis sama dengan yang dibuat admin.
+     */
+    public function profileBarcodeDownload()
+    {
+        /** @var \App\Models\Petugas $petugas */
+        $petugas = Auth::guard('petugas')->user();
+
+        if (!$petugas || empty($petugas->nik)) {
+            return redirect()->back()->with('error', 'Barcode tidak ditemukan untuk akun ini.');
+        }
+
+        $qrImage = QrCode::format('svg')
+            ->size(500)
+            ->margin(1)
+            ->generate($petugas->nik);
+
+        $filename = 'barcode-petugas-' . $petugas->nik . '.svg';
+
+        return response($qrImage)
+            ->header('Content-Type', 'image/svg+xml')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 }

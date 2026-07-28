@@ -604,12 +604,99 @@
         </section>
 
     </main>
+    
+    <!-- ===================== LOGIN MANUAL (EMAIL & PASSWORD) ===================== -->
+<section class="px-4 sm:px-6 lg:px-8 -mt-4 pb-14 lg:pb-20">
+    <div class="max-w-md mx-auto reveal">
+        <div class="scanner-shell p-4 sm:p-5 rounded-3xl">
 
-    <footer class="border-t py-8 text-center text-xs" style="border-color: var(--line); color: var(--muted);">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p>&copy; {{ date('Y') }} Sistem Presensi Perpustakaan Digital — SMK Negeri 17 Jakarta.</p>
+            <div class="flex items-center justify-between mb-4 px-1">
+                <span class="text-xs font-bold flex items-center gap-1.5" style="color: var(--ink-900);">
+                    <i class="fa-solid fa-lock" style="color: var(--blue-600);"></i>
+                    Login Manual
+                </span>
+                <span class="text-[11px] font-semibold" style="color: var(--muted);">
+                    Untuk Admin
+                </span>
+            </div>
+
+            @if($errors->any())
+                <div class="mb-4 p-3 rounded-2xl text-xs font-semibold"
+                     style="background:#FEF2F2; border:1px solid #FECACA; color:#B91C1C;">
+                    @foreach($errors->all() as $error)
+                        <p class="flex items-center gap-2"><i class="fa-solid fa-circle-exclamation"></i> {{ $error }}</p>
+                    @endforeach
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('login.authenticate', ['role' => request('role', 'admin')]) }}" class="space-y-3">
+                @csrf
+
+                <div>
+                    <label class="text-[11px] font-bold block mb-1.5 px-1" style="color: var(--ink-700);">
+                        Masuk sebagai
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition"
+                               style="border: 1px solid var(--line); color: var(--blue-700);"
+                               id="roleLabelAdmin">
+                            <input type="radio" name="role" value="admin" class="hidden role-radio" checked>
+                            <i class="fa-solid fa-user-shield"></i> Admin
+                        </label>
+                        <label class="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition"
+                               style="border: 1px solid var(--line); color: var(--blue-700);"
+                               id="roleLabelPetugas">
+                            <input type="radio" name="role" value="petugas" class="hidden role-radio">
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="email" class="text-[11px] font-bold block mb-1.5 px-1" style="color: var(--ink-700);">
+                        Email
+                    </label>
+                    <div class="relative">
+                        <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-xs" style="color: var(--muted);"></i>
+                        <input type="email" name="email" id="email" required autocomplete="username"
+                               value="{{ old('email') }}"
+                               placeholder="nama@sekolah.sch.id"
+                               class="w-full pl-10 pr-4 py-3 rounded-xl text-xs font-semibold outline-none transition"
+                               style="border: 1px solid var(--line); color: var(--ink-900);">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="password" class="text-[11px] font-bold block mb-1.5 px-1" style="color: var(--ink-700);">
+                        Password
+                    </label>
+                    <div class="relative">
+                        <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-xs" style="color: var(--muted);"></i>
+                        <input type="password" name="password" id="password" required autocomplete="current-password"
+                               placeholder="••••••••"
+                               class="w-full pl-10 pr-11 py-3 rounded-xl text-xs font-semibold outline-none transition"
+                               style="border: 1px solid var(--line); color: var(--ink-900);">
+                        <button type="button" id="togglePassword"
+                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs" style="color: var(--muted);">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <label class="flex items-center gap-2 px-1 py-1 cursor-pointer">
+                    <input type="checkbox" name="remember" class="rounded" style="accent-color: var(--blue-600);">
+                    <span class="text-[11px] font-semibold" style="color: var(--muted);">Ingat saya</span>
+                </label>
+
+                <button type="submit"
+                        class="w-full py-3 rounded-xl text-white text-xs font-bold transition shadow-md flex items-center justify-center gap-2"
+                        style="background: linear-gradient(135deg, var(--blue-500), var(--cyan-400)); box-shadow: 0 10px 25px -10px rgba(47,128,237,0.55);">
+                    <i class="fa-solid fa-right-to-bracket"></i> Masuk
+                </button>
+            </form>
+
         </div>
-    </footer>
+    </div>
+</section>
 
     <script>
         /* =========================================================
@@ -938,7 +1025,42 @@
                 goToSlide(index);
             });
         })();
+/* =========================================================
+   LOGIN MANUAL — toggle role & show/hide password
+========================================================= */
+(function () {
+    const radios = document.querySelectorAll('.role-radio');
+    const form = document.querySelector('form[action*="login"]');
 
+    function updateRoleStyle() {
+        document.getElementById('roleLabelAdmin').style.background =
+            document.querySelector('input[value="admin"]').checked ? 'var(--sky-50)' : '#fff';
+        document.getElementById('roleLabelPetugas').style.background =
+            document.querySelector('input[value="petugas"]').checked ? 'var(--sky-50)' : '#fff';
+    }
+
+    radios.forEach(r => {
+        r.addEventListener('change', function () {
+            updateRoleStyle();
+            if (form) {
+                form.action = form.action.replace(/\/(admin|petugas)$/, '/' + this.value);
+            }
+        });
+    });
+    updateRoleStyle();
+
+    const togglePw = document.getElementById('togglePassword');
+    const pwInput = document.getElementById('password');
+    if (togglePw && pwInput) {
+        togglePw.addEventListener('click', function () {
+            const isHidden = pwInput.type === 'password';
+            pwInput.type = isHidden ? 'text' : 'password';
+            this.innerHTML = isHidden
+                ? '<i class="fa-solid fa-eye-slash"></i>'
+                : '<i class="fa-solid fa-eye"></i>';
+        });
+    }
+})();
         /* =========================================================
            RAK BUKU INTERAKTIF
         ========================================================= */

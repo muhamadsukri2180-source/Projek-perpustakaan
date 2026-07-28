@@ -41,7 +41,7 @@
                         <i class="fa-solid fa-book-bookmark text-lg"></i>
                     </div>
                     <span class="font-extrabold text-xl tracking-wide text-white drop-shadow-sm">
-                        Perpustakaan <span class="text-xs font-semibold uppercase bg-white/20 px-2 py-0.5 rounded-md ml-1">Petugas</span>
+                        Perpustakaan </span>
                     </span>
                 </div>
 
@@ -75,6 +75,12 @@
                         <span class="group-hover:text-emerald-700">P</span>
                     </a>
                 </div>
+                <form action="{{ route('logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" title="Keluar" class="w-9 h-9 rounded-xl text-white flex items-center justify-center text-sm ">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </form>
 
             </div>
         </div>

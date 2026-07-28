@@ -70,14 +70,19 @@
 
                 <div class="flex items-center gap-3">
                     <div class="hidden sm:flex flex-col text-right">
-                        <span class="text-xs font-bold leading-tight">{{ $admin->nama ?? 'Admin' }}</span>
+                        <span class="text-xs font-bold leading-tight">{{ $admin->name ?? 'Admin' }}</span>
                     </div>
                     <a href="{{ Route::has('admin.profile') ? route('admin.profile') : '#' }}" 
                        class="w-9 h-9 rounded-full bg-white text-blue-600 font-bold flex items-center justify-center text-sm shadow-md ring-2 ring-white/30 hover:scale-105 transition">
-                        {{ substr($admin->nama ?? 'A', 0, 1) }}
+                        {{ substr($admin->name ?? 'A', 0, 1) }}
                     </a>
                 </div>
-
+                <form action="{{ route('logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" title="Keluar" class="w-9 h-9 rounded-xl text-white flex items-center justify-center text-sm ">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </form>
             </div>
         </div>
     </nav>
@@ -112,7 +117,7 @@
                     <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                         <div class="relative shrink-0">
                             <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center font-extrabold text-3xl shadow-lg shadow-blue-200 border-2 border-white">
-                                {{ strtoupper(substr($admin->nama ?? 'A', 0, 1)) }}
+                                {{ strtoupper(substr($admin->name ?? 'A', 0, 1)) }}
                             </div>
                             <span class="absolute -bottom-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm border border-white">
                                 Aktif
@@ -124,10 +129,13 @@
                                 Super Administrator
                             </span>
                             <h3 class="text-2xl font-extrabold text-slate-800 leading-tight pt-1">
-                                {{ $admin->nama ?? 'Administrator' }}
+                                {{ $admin->name ?? 'Administrator' }}
                             </h3>
                             <p class="text-xs font-semibold text-slate-400">
-                                Kode Login / Auth: <span class="text-slate-600 font-mono">{{ $admin->username ?? $admin->id_admin ?? 'ADM-001' }}</span>
+                                Email: <span class="text-slate-600">{{ $admin->email ?? '-' }}</span>
+                            </p>
+                            <p class="text-xs font-semibold text-slate-400">
+                                Kode Login / Auth: <span class="text-slate-600 font-mono">{{ $admin->barcode_code ?? 'ADM-001' }}</span>
                             </p>
                         </div>
                     </div>
@@ -163,18 +171,15 @@
                             <div class="w-40 h-40 bg-slate-100 rounded-xl flex flex-col items-center justify-center text-slate-400 p-2">
                                 <i class="fa-solid fa-qrcode text-5xl mb-2 text-slate-300"></i>
                                 <span class="text-[10px] font-mono text-slate-500 break-all">
-                                    {{ $admin->username ?? $admin->id_admin ?? 'ADM-001' }}
+                                    {{ $admin->barcode_code ?? 'ADM-001' }}
                                 </span>
                             </div>
                         @endif
                     </div>
 
                     @if(Route::has('admin.profile.barcode.download'))
-                        <a href="{{ route('admin.profile.barcode.download') }}" 
-                           class="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-md shadow-blue-200 transition duration-200">
-                            <i class="fa-solid fa-download text-sm"></i> Unduh Barcode Login
-                        </a>
-                    @endif
+    <a href="{{ route('admin.profile.barcode.download') }}" ...>Unduh Barcode Login</a>
+@endif
 
                 </div>
 

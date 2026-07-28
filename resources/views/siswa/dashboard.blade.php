@@ -56,24 +56,19 @@
                        class="px-4 py-2 rounded-xl text-white/90 hover:bg-white/10 hover:text-white transition">
                         <i class="fa-solid fa-clock-rotate-left mr-1.5 text-xs"></i> Riwayat Kunjungan
                     </a>
-
-                    <a href="{{ Route::has('siswa.profile') ? route('siswa.profile') : '#' }}"
-                       class="px-4 py-2 rounded-xl text-white/90 hover:bg-white/10 hover:text-white transition">
-                        <i class="fa-solid fa-id-card mr-1.5 text-xs"></i> Profil Saya
-                    </a>
                 </div>
 
                 <div class="flex items-center gap-3">
                     <div class="hidden sm:flex flex-col text-right">
-                        <span class="text-xs font-bold leading-tight drop-shadow-sm">{{ auth()->user()->nama ?? auth()->user()->name ?? 'Siswa' }}</span>
+                        <span class="text-xs font-bold leading-tight drop-shadow-sm">{{ $siswa->nama ?? $siswa->name ?? 'Siswa' }}</span>
                         <span class="text-[10px] text-sky-100 font-medium">Siswa Aktif</span>
                     </div>
 
                     <a href="{{ Route::has('siswa.profile') ? route('siswa.profile') : '#' }}" class="w-9 h-9 rounded-full bg-white text-sky-600 font-bold flex items-center justify-center text-sm shadow-md ring-2 ring-white/40 overflow-hidden">
-                        @if(auth()->user()->foto ?? false)
-                            <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="Foto Profile" class="w-full h-full object-cover">
+                        @if($siswa->foto ?? false)
+                            <img src="{{ asset('storage/' . $siswa->foto) }}" alt="Foto Profile" class="w-full h-full object-cover">
                         @else
-                            <span>{{ strtoupper(substr(auth()->user()->nama ?? auth()->user()->name ?? 'S', 0, 1)) }}</span>
+                            <span>{{ strtoupper(substr($siswa->nama ?? $siswa->name ?? 'S', 0, 1)) }}</span>
                         @endif
                     </a>
 
@@ -103,7 +98,7 @@
                     <i class="fa-regular fa-calendar mr-1"></i> {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}
                 </span>
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                    Selamat Datang, {{ auth()->user()->nama ?? auth()->user()->name ?? 'Siswa' }}! 👋
+                    Selamat Datang, {{ $siswa->nama ?? $siswa->name ?? 'Siswa' }}! 👋
                 </h1>
                 <p class="text-sky-100 mt-2 text-sm max-w-xl leading-relaxed">
                     Tunjukkan Kartu Digital atau pindai Barcode/QR Code Anda kepada petugas perpustakaan saat melakukan presensi masuk dan keluar.
@@ -125,30 +120,30 @@
 
                 <div class="relative mb-3">
                     <div class="w-24 h-24 rounded-2xl bg-sky-50 border-2 border-sky-100 p-1 shadow-sm overflow-hidden flex items-center justify-center">
-                        @if(auth()->user()->foto ?? false)
-                            <img src="{{ asset('storage/' . auth()->user()->foto) }}" alt="Foto Siswa" class="w-full h-full object-cover rounded-xl">
+                        @if($siswa->foto ?? false)
+                            <img src="{{ asset('storage/' . $siswa->foto) }}" alt="Foto Siswa" class="w-full h-full object-cover rounded-xl">
                         @else
                             <div class="w-full h-full bg-sky-500 text-white font-extrabold text-3xl flex items-center justify-center rounded-xl">
-                                {{ strtoupper(substr(auth()->user()->nama ?? auth()->user()->name ?? 'S', 0, 1)) }}
+                                {{ strtoupper(substr($siswa->nama ?? $siswa->name ?? 'S', 0, 1)) }}
                             </div>
                         @endif
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <h3 class="font-bold text-slate-800 text-base">{{ auth()->user()->nama ?? auth()->user()->name ?? 'Nama Siswa' }}</h3>
+                    <h3 class="font-bold text-slate-800 text-base">{{ $siswa->nama ?? $siswa->name ?? 'Nama Siswa' }}</h3>
                     <p class="text-xs text-slate-500 font-medium mt-0.5">
-                        {{ auth()->user()->kelas->nama_kelas ?? '-' }} &bull; {{ auth()->user()->jurusan->nama_jurusan ?? '-' }}
+                        {{ $siswa->kelas->nama_kelas ?? '-' }} &bull; {{ $siswa->jurusan->nama_jurusan ?? '-' }}
                     </p>
                 </div>
 
                 <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl w-full flex flex-col items-center justify-center my-2 shadow-inner">
                     <div class="w-36 h-36 bg-white p-2 rounded-xl shadow-sm border border-slate-200 flex items-center justify-center">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ auth()->user()->nisn ?? '12345678' }}"
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $siswa->nisn ?? '12345678' }}"
                              alt="QR Code NISN" class="w-full h-full object-contain">
                     </div>
                     <p class="mt-3 font-mono text-xs font-bold text-slate-700 tracking-wider bg-white px-3 py-1 rounded-lg border border-slate-200">
-                        NISN: {{ auth()->user()->nisn ?? '-' }}
+                        NISN: {{ $siswa->nisn ?? '-' }}
                     </p>
                 </div>
 
@@ -177,7 +172,6 @@
                             <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Status Hari Ini</p>
                             @if(($statusHariIni ?? null) === 'di_perpus')
                                 <h3 class="text-lg font-extrabold text-amber-500 mt-2">Di Dalam Ruangan</h3>
-                                <span class="text-xs text-amber-600 font-semibold bg-amber-50 px-2.5 py-1 rounded-md mt-3 inline-block">Jangan Lupa Scan Keluar</span>
                             @elseif(($statusHariIni ?? null) === 'selesai')
                                 <h3 class="text-lg font-extrabold text-emerald-600 mt-2">Sudah Keluar</h3>
                                 <span class="text-xs text-emerald-600 font-semibold bg-emerald-50 px-2.5 py-1 rounded-md mt-3 inline-block">Kunjungan Selesai</span>
