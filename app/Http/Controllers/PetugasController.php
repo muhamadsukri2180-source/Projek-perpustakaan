@@ -127,7 +127,7 @@ class PetugasController extends Controller
             'nisn.required'          => 'NISN wajib diisi.',
             'nisn.unique'            => 'NISN sudah terdaftar.',
             'nis.required'           => 'NIS wajib diisi.',
-            'nis.unique'             => 'NIS sudah terdaftar.',
+            'nis.unique'            => 'NIS sudah terdaftar.',
             'nama.required'          => 'Nama siswa wajib diisi.',
             'kelas_id.required'      => 'Kelas wajib dipilih.',
             'kelas_id.exists'        => 'Kelas yang dipilih tidak valid.',
@@ -183,7 +183,7 @@ class PetugasController extends Controller
             'nisn.required'          => 'NISN wajib diisi.',
             'nisn.unique'            => 'NISN sudah terdaftar.',
             'nis.required'           => 'NIS wajib diisi.',
-            'nis.unique'             => 'NIS sudah terdaftar.',
+            'nis.unique'            => 'NIS sudah terdaftar.',
             'nama.required'          => 'Nama siswa wajib diisi.',
             'kelas_id.required'      => 'Kelas wajib dipilih.',
             'kelas_id.exists'        => 'Kelas yang dipilih tidak valid.',
@@ -282,30 +282,91 @@ class PetugasController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function presensiIndex()
+    public function presensiIndex(Request $request)
     {
         $today = Carbon::today()->toDateString();
 
+        // 1. Data Absensi Hari Ini
         $absensiHariIni = Absensi::with(['siswa.kelas', 'siswa.jurusan'])
             ->where('tanggal', $today)
             ->latest('waktu_masuk')
             ->get();
 
-        $riwayatAbsensi = Absensi::with(['siswa.kelas', 'siswa.jurusan'])
-            ->latest('tanggal')
+        // 2. Riwayat Absensi dengan Filter Tanggal (jika ada)
+        $riwayatQuery = Absensi::with(['siswa.kelas', 'siswa.jurusan']);
+        
+        if ($request->filled('tanggal_filter')) {
+            $riwayatQuery->where('tanggal', $request->tanggal_filter);
+        }
+
+        $riwayatAbsensi = $riwayatQuery->latest('tanggal')
             ->latest('waktu_masuk')
             ->paginate(15);
 
-        return view('petugas.presensi', compact('absensiHariIni', 'riwayatAbsensi'));
+        // 3. Statistik Grafik Pengunjung (7 Hari Terakhir)
+        $sevenDaysAgo = Carbon::today()->subDays(6);
+        $rawPengunjung = Absensi::select(
+                DB::raw('DATE(tanggal) as tgl'),
+                DB::raw('count(*) as total')
+            )
+            ->whereBetween('tanggal', [$sevenDaysAgo->toDateString(), $today])
+            ->groupBy('tgl')
+            ->pluck('total', 'tgl')
+            ->toArray();
+
+        $chartPengunjung = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $dateKey = Carbon::today()->subDays($i)->format('Y-m-d');
+            $labelFormat = Carbon::today()->subDays($i)->translatedFormat('d M');
+            $chartPengunjung[$labelFormat] = $rawPengunjung[$dateKey] ?? 0;
+        }
+
+        // 4. Statistik Grafik Per Kelas
+        $chartKelas = Kelas::get()->mapWithKeys(function ($kelas) {
+            $totalAbsen = Absensi::whereHas('siswa', function ($q) use ($kelas) {
+                $q->where('kelas_id', $kelas->id);
+            })->count();
+            return [$kelas->nama_kelas => $totalAbsen];
+        })->toArray();
+
+        // 5. Statistik Grafik Per Jurusan
+        $chartJurusan = Jurusan::get()->mapWithKeys(function ($jurusan) {
+            $totalAbsen = Absensi::whereHas('siswa', function ($q) use ($jurusan) {
+                $q->where('jurusan_id', $jurusan->id);
+            })->count();
+            return [$jurusan->nama_jurusan => $totalAbsen];
+        })->toArray();
+
+        return view('petugas.presensi', compact(
+            'absensiHariIni', 
+            'riwayatAbsensi', 
+            'chartPengunjung', 
+            'chartKelas', 
+            'chartJurusan'
+        ));
     }
 
     public function presensiScan(Request $request)
     {
-        $request->validate([
-            'nisn' => 'required|string|exists:siswa,nisn',
-        ]);
+        // Support request AJAX (JSON) dan Form Biasa
+        $nisnInput = $request->barcode_nisn ?? $request->nisn;
 
-        $siswa = Siswa::where('nisn', $request->nisn)->first();
+        if (!$nisnInput) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'NISN wajib diisi.'], 400);
+            }
+            return redirect()->back()->with('error', 'NISN wajib diisi.');
+        }
+
+        $siswa = Siswa::where('nisn', $nisnInput)->first();
+
+        if (!$siswa) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Siswa dengan NISN tersebut tidak ditemukan.'], 440);
+            }
+            return redirect()->back()->with('error', 'Siswa tidak ditemukan.');
+        }
+
         $today = Carbon::today()->toDateString();
         $currentTime = Carbon::now()->toTimeString();
 
@@ -320,7 +381,12 @@ class PetugasController extends Controller
                 'status'       => 'selesai',
             ]);
 
-            return redirect()->back()->with('success', 'Absen Keluar Berhasil! Terima kasih, ' . $siswa->nama);
+            $msg = 'Absen Keluar Berhasil! Terima kasih, ' . $siswa->nama;
+
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => $msg]);
+            }
+            return redirect()->back()->with('success', $msg);
         }
 
         Absensi::create([
@@ -330,7 +396,12 @@ class PetugasController extends Controller
             'status'      => 'di_perpus',
         ]);
 
-        return redirect()->back()->with('success', 'Absen Masuk Berhasil! Selamat datang, ' . $siswa->nama);
+        $msg = 'Absen Masuk Berhasil! Selamat datang, ' . $siswa->nama;
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => $msg]);
+        }
+        return redirect()->back()->with('success', $msg);
     }
 
     /*
@@ -385,15 +456,7 @@ class PetugasController extends Controller
 
     /*
     |--------------------------------------------------------------------------
-    | LAPORAN KUNJUNGAN (berdasarkan data presensi hasil scan barcode)
-    |--------------------------------------------------------------------------
-    | PENTING: satu halaman "petugas.laporan" menampilkan 4 tab sekaligus
-    | (harian/mingguan/bulanan/tahunan), jadi SEMUA data untuk keempat tab
-    | wajib dihitung dan dikirim bersamaan di SETIAP request ke halaman ini.
-    | Inilah sumber error "Undefined variable $tanggal" sebelumnya: method
-    | laporanIndex() lama tidak mengirim variable apapun, dan method
-    | laporanHarian()/laporanMingguan()/dst hanya menghitung satu tab lalu
-    | me-render ulang view yang sama tanpa data 3 tab lainnya.
+    | LAPORAN KUNJUNGAN
     |--------------------------------------------------------------------------
     */
 
@@ -410,7 +473,6 @@ class PetugasController extends Controller
         $totalHarian = $laporanHarian->count();
 
         // ==================== LAPORAN MINGGUAN ====================
-        // Input type="week" mengirim format "2026-W30"
         if ($request->filled('minggu') && str_contains($request->minggu, '-W')) {
             [$tahunMingguInput, $noMingguInput] = explode('-W', $request->minggu);
             $awalMinggu = Carbon::now()->setISODate((int) $tahunMingguInput, (int) $noMingguInput)->startOfWeek();
@@ -437,7 +499,7 @@ class PetugasController extends Controller
         }
         $totalMingguan = array_sum(array_column($laporanMingguan, 'total'));
 
-        // ==================== LAPORAN BULANAN (rekap per minggu) ====================
+        // ==================== LAPORAN BULANAN ====================
         $bulanInput = $request->get('bulan', Carbon::now()->format('Y-m'));
         [$tahunBulan, $bulanAngka] = array_pad(explode('-', $bulanInput), 2, Carbon::now()->format('m'));
 
@@ -498,7 +560,6 @@ class PetugasController extends Controller
         }
         $totalTahunan = array_sum(array_column($laporanTahunan, 'total'));
 
-        // Daftar tahun yang tersedia untuk dropdown (berdasarkan data yang ada)
         $tahunTersedia = Absensi::selectRaw('DISTINCT YEAR(tanggal) as tahun')
             ->orderByDesc('tahun')
             ->pluck('tahun');
@@ -515,11 +576,6 @@ class PetugasController extends Controller
         ));
     }
 
-    /**
-     * Alias supaya route lama (petugas.laporan.harian / .mingguan / .bulanan / .tahunan)
-     * tetap berfungsi dan menampilkan halaman laporan lengkap yang sama,
-     * dengan tab yang relevan otomatis terisi sesuai filter yang dikirim.
-     */
     public function laporanHarian(Request $request)
     {
         return $this->laporanIndex($request);
@@ -540,26 +596,14 @@ class PetugasController extends Controller
         return $this->laporanIndex($request);
     }
 
-    public function statistikPengunjung()
+    public function statistikPengunjung(Request $request)
     {
-        return view('petugas.presensi');
+        return $this->presensiIndex($request);
     }
 
     /*
     |--------------------------------------------------------------------------
     | PROFIL PETUGAS
-    |--------------------------------------------------------------------------
-    | PENTING: pakai Auth::guard('petugas') -- BUKAN Auth::user() polos --
-    | karena akun petugas login lewat guard 'petugas' ke tabel master
-    | 'petugas' (kolom nik, nama, foto), sama seperti admin generate
-    | barcode di petugas.barcode-generate. Kalau dulu pakai Auth::user()
-    | biasa, itu cek guard default 'web' yang isinya kosong untuk akun
-    | petugas -> makanya muncul "Attempt to read property id on null".
-    |
-    | Barcode yang ditampilkan di sini SENGAJA dibuat dari data yang SAMA
-    | (nik) dengan yang dipakai admin di barcodeGenerate()/barcodeDownload()
-    | untuk siswa -- artinya barcode-nya identik/konsisten, bukan barcode
-    | baru yang berbeda dari yang sudah admin buat.
     |--------------------------------------------------------------------------
     */
 
@@ -638,10 +682,6 @@ class PetugasController extends Controller
         return redirect()->back()->with('success', 'Password berhasil diubah!');
     }
 
-    /**
-     * Unduh barcode/QR code milik petugas yang sedang login.
-     * Isi barcode = kolom "nik", persis sama dengan yang dibuat admin.
-     */
     public function profileBarcodeDownload()
     {
         /** @var \App\Models\Petugas $petugas */

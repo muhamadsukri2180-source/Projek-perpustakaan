@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Presensi digital Perpustakaan SMK Negeri 17 Jakarta — cukup tempelkan kartu barcode ke kamera.">
     <title>Perpustakaan — Presensi Digital SMK Negeri 17 Jakarta</title>
+    <link rel="icon" href="{{ asset('images/logo-smkn17.png') }}" type="image/png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,12 +24,15 @@
             --blue-500:#2F80ED;
             --blue-600:#1D6FE0;
             --blue-700:#154FA8;
+            --blue-800: #0F3D82;
             --cyan-400:#38BDF8;
             --ink-900: #0B2545;
             --ink-700: #24405F;
             --muted:   #5E7B9E;
             --line:    #DCEAFB;
             --amber:   #F59E0B;
+            --gold:    #C9932E;
+            --maroon:  #8B1E3F;
             --teal:    #0D9488;
             --rose:    #E11D48;
         }
@@ -42,6 +46,44 @@
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* ---------- Navbar biru ---------- */
+        .navbar-shell {
+            background: linear-gradient(120deg, var(--blue-700) 0%, var(--blue-800) 55%, var(--ink-900) 100%);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 12px 30px -18px rgba(11,37,69,0.55);
+        }
+        .navbar-logo-ring {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            padding: 4px;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.28);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 18px -8px rgba(0,0,0,0.4);
+        }
+        .navbar-logo-ring img { width: 100%; height: 100%; object-fit: contain; }
+        .nav-link {
+            position: relative;
+            color: rgba(255,255,255,0.85);
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            left: 0; bottom: -6px;
+            width: 0; height: 2px;
+            background: var(--cyan-400);
+            transition: width .2s ease;
+        }
+        .nav-link:hover { color: #fff; }
+        .nav-link:hover::after { width: 100%; }
+
+        #menuMobile {
+            background: #fff;
+            border-radius: 0 0 1.25rem 1.25rem;
+            box-shadow: 0 20px 40px -20px rgba(11,37,69,0.35);
+            border: 1px solid var(--line);
+        }
 
         /* ---------- Hero blob background ---------- */
         .hero-bg {
@@ -71,6 +113,22 @@
         }
         .hero-bg > * { position: relative; z-index: 1; }
 
+        /* Watermark lambang sekolah di hero — elemen signature halaman */
+        .crest-watermark {
+            position: absolute;
+            top: -60px;
+            right: -80px;
+            width: 480px;
+            height: 480px;
+            opacity: 0.05;
+            z-index: 0;
+            pointer-events: none;
+            filter: grayscale(1);
+        }
+        @media (max-width: 640px) {
+            .crest-watermark { width: 300px; height: 300px; top: -30px; right: -60px; }
+        }
+
         .eyebrow-pill {
             display: inline-flex;
             align-items: center;
@@ -85,6 +143,51 @@
             color: var(--blue-700);
             box-shadow: 0 10px 24px -16px rgba(21,79,168,0.4);
         }
+
+        /* ---------- Partikel bertema literasi ---------- */
+        .particles-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            color: var(--blue-500);
+            opacity: 0.14;
+        }
+        .particle.gold { color: var(--gold); opacity: 0.16; }
+        .particle.teal { color: var(--teal); opacity: 0.14; }
+        @media (prefers-reduced-motion: no-preference) {
+            .particle { animation: floatParticle 12s ease-in-out infinite; }
+        }
+        @keyframes floatParticle {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-22px) rotate(7deg); }
+        }
+
+        /* ---------- Statistik mini di hero ---------- */
+        .stat-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 1rem;
+            background: #fff;
+            border: 1px solid var(--line);
+            box-shadow: 0 10px 24px -18px rgba(21,79,168,0.5);
+        }
+        .stat-chip .stat-icon {
+            width: 34px; height: 34px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .stat-chip .stat-value { font-weight: 800; font-size: 13px; color: var(--ink-900); line-height: 1.1; }
+        .stat-chip .stat-label { font-size: 10.5px; font-weight: 600; color: var(--muted); }
 
         /* ---------- Scanner card ---------- */
         .scanner-shell {
@@ -110,8 +213,6 @@
             display: none !important;
         }
 
-        /* Kamera dibuat persegi dan TIDAK ditimpa mask gelap — hanya bingkai tipis
-           supaya seluruh area kamera tetap terlihat jelas oleh siswa */
         .camera-container {
             position: relative;
             width: 100%;
@@ -230,25 +331,6 @@
             opacity: 0.9;
         }
 
-        /* ---------- Statistik mini di hero ---------- */
-        .stat-chip {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 16px;
-            border-radius: 1rem;
-            background: #fff;
-            border: 1px solid var(--line);
-            box-shadow: 0 10px 24px -18px rgba(21,79,168,0.5);
-        }
-        .stat-chip .stat-icon {
-            width: 34px; height: 34px;
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 13px;
-            color: #fff;
-        }
-
         /* ---------- Carousel "Tentang" ---------- */
         .carousel-track {
             display: flex;
@@ -332,6 +414,7 @@
 
         @media (prefers-reduced-motion: reduce) {
             .reveal { opacity: 1; transform: none; transition: none; }
+            .particle { animation: none !important; }
         }
 
         ::selection { background: var(--blue-500); color: #fff; }
@@ -339,42 +422,41 @@
 </head>
 <body class="antialiased">
 
-    <!-- ===================== HEADER ===================== -->
-    <header class="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b" style="border-color: var(--line);">
+    <!-- ===================== HEADER / NAVBAR BIRU ===================== -->
+    <header class="sticky top-0 z-50 navbar-shell">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg"
-                         style="background: linear-gradient(135deg, var(--blue-500), var(--cyan-400)); box-shadow: 0 10px 25px -10px rgba(47,128,237,0.55);">
-                        <i class="fa-solid fa-book-bookmark text-xl"></i>
+                    <div class="navbar-logo-ring">
+                        <img src="{{ asset('images/logo-smkn17.png') }}" alt="Lambang SMK Negeri 17 Jakarta">
                     </div>
                     <div>
-                        <span class="font-black text-xl tracking-tight block" style="color: var(--ink-900);">
+                        <span class="font-black text-lg sm:text-xl tracking-tight block text-white">
                             Perpustakaan
                         </span>
-                        <span class="text-[11px] font-bold tracking-wider uppercase block" style="color: var(--blue-600);">
+                        <span class="text-[10.5px] sm:text-[11px] font-bold tracking-wider uppercase block" style="color: var(--cyan-400);">
                             SMK Negeri 17 Jakarta
                         </span>
                     </div>
                 </div>
 
-                <nav class="hidden md:flex items-center gap-8 text-sm font-semibold" style="color: var(--ink-700);">
-                    <a href="#scanner" class="hover:text-blue-600 transition">Presensi</a>
-                    <a href="#tentang" class="hover:text-blue-600 transition">Tentang</a>
-                    <a href="#rak-buku" class="hover:text-blue-600 transition">Rak Buku</a>
-                    <a href="#galeri" class="hover:text-blue-600 transition">Galeri</a>
+                <nav class="hidden md:flex items-center gap-8 text-sm font-semibold">
+                    <a href="#scanner" class="nav-link pb-1">Presensi</a>
+                    <a href="#tentang" class="nav-link pb-1">Tentang</a>
+                    <a href="#rak-buku" class="nav-link pb-1">Rak Buku</a>
+                    <a href="#galeri" class="nav-link pb-1">Galeri</a>
                 </nav>
 
-                <button id="btnMenuMobile" class="md:hidden w-10 h-10 flex items-center justify-center rounded-xl" style="border: 1px solid var(--line); color: var(--blue-700);">
+                <button id="btnMenuMobile" class="md:hidden w-10 h-10 flex items-center justify-center rounded-xl text-white" style="border: 1px solid rgba(255,255,255,0.3);">
                     <i class="fa-solid fa-bars"></i>
                 </button>
             </div>
 
-            <nav id="menuMobile" class="hidden md:hidden pb-4 flex flex-col gap-3 text-sm font-semibold" style="color: var(--ink-700);">
-                <a href="#scanner">Presensi</a>
-                <a href="#tentang">Tentang</a>
-                <a href="#rak-buku">Rak Buku</a>
-                <a href="#galeri">Galeri</a>
+            <nav id="menuMobile" class="hidden md:hidden pb-4 px-4 flex flex-col gap-1 text-sm font-semibold" style="color: var(--ink-700);">
+                <a href="#scanner" class="py-2.5 border-b" style="border-color: var(--line);">Presensi</a>
+                <a href="#tentang" class="py-2.5 border-b" style="border-color: var(--line);">Tentang</a>
+                <a href="#rak-buku" class="py-2.5 border-b" style="border-color: var(--line);">Rak Buku</a>
+                <a href="#galeri" class="py-2.5">Galeri</a>
             </nav>
         </div>
     </header>
@@ -382,6 +464,18 @@
     <main>
         <!-- ===================== HERO + SCANNER ===================== -->
         <section id="scanner" class="hero-bg py-14 lg:py-20 px-4 sm:px-6 lg:px-8">
+
+            <img src="{{ asset('images/logo-smkn17.png') }}" alt="" aria-hidden="true" class="crest-watermark">
+
+            <div class="particles-layer" aria-hidden="true">
+                <i class="fa-solid fa-book-open particle" style="top:12%; left:8%; font-size:26px; animation-duration:13s;"></i>
+                <i class="fa-solid fa-feather-pointed particle gold" style="top:22%; left:88%; font-size:22px; animation-duration:15s; animation-delay:.5s;"></i>
+                <i class="fa-solid fa-graduation-cap particle" style="top:68%; left:5%; font-size:24px; animation-duration:11s; animation-delay:1s;"></i>
+                <i class="fa-solid fa-bookmark particle teal" style="top:80%; left:92%; font-size:20px; animation-duration:14s; animation-delay:.3s;"></i>
+                <i class="fa-solid fa-star particle gold" style="top:6%; left:60%; font-size:14px; animation-duration:9s;"></i>
+                <i class="fa-solid fa-quote-right particle" style="top:45%; left:95%; font-size:18px; animation-duration:12s; animation-delay:.8s;"></i>
+            </div>
+
             <div class="max-w-4xl mx-auto space-y-8">
 
                 <div class="text-center space-y-4 reveal">
@@ -398,6 +492,36 @@
                     <p class="text-sm sm:text-base max-w-xl mx-auto font-medium leading-relaxed" style="color: var(--muted);">
                         Posisikan barcode kartu siswa tepat di dalam kotak. Sistem akan memandu jarak yang pas dan langsung mencatat kehadiranmu.
                     </p>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-3 reveal">
+                    <div class="stat-chip">
+                        <span class="stat-icon" style="background: linear-gradient(135deg, var(--blue-500), var(--cyan-400));">
+                            <i class="fa-solid fa-book"></i>
+                        </span>
+                        <div>
+                            <div class="stat-value">1.200+</div>
+                            <div class="stat-label">Koleksi Buku</div>
+                        </div>
+                    </div>
+                    <div class="stat-chip">
+                        <span class="stat-icon" style="background: linear-gradient(135deg, var(--teal), #14B8A6);">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </span>
+                        <div>
+                            <div class="stat-value">500+</div>
+                            <div class="stat-label">Anggota Aktif</div>
+                        </div>
+                    </div>
+                    <div class="stat-chip">
+                        <span class="stat-icon" style="background: linear-gradient(135deg, var(--gold), var(--amber));">
+                            <i class="fa-solid fa-bolt"></i>
+                        </span>
+                        <div>
+                            <div class="stat-value">Real-time</div>
+                            <div class="stat-label">Presensi Barcode</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="alertBox" class="hidden max-w-2xl mx-auto p-4 rounded-2xl text-xs font-semibold shadow-lg transition-all"></div>
@@ -479,65 +603,84 @@
             </div>
         </section>
 
+        <div class="barcode-divider"></div>
+
         <!-- ===================== TENTANG (carousel + teks) ===================== -->
-        <section id="tentang" class="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-            <div class="text-center max-w-2xl mx-auto space-y-3 reveal">
-                <span class="text-xs font-bold tracking-widest uppercase" style="color: var(--blue-600);">Tentang</span>
-                <h2 class="text-2xl sm:text-3xl font-black" style="color: var(--ink-900);">Perpustakaan SMK Negeri 17 Jakarta</h2>
+        <section id="tentang" class="relative overflow-hidden py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+
+            <div class="particles-layer" aria-hidden="true">
+                <i class="fa-solid fa-feather particle" style="top:8%; left:4%; font-size:22px; animation-duration:13s;"></i>
+                <i class="fa-solid fa-bookmark particle gold" style="top:75%; left:90%; font-size:20px; animation-duration:12s; animation-delay:.4s;"></i>
+                <i class="fa-solid fa-book particle teal" style="top:85%; left:6%; font-size:20px; animation-duration:14s; animation-delay:.9s;"></i>
             </div>
 
-            <div class="grid lg:grid-cols-12 gap-8 items-center mt-12 reveal">
-                <!-- Carousel -->
-                <div class="lg:col-span-7 relative">
-                    <div id="carouselTrack" class="carousel-track rounded-3xl" style="border: 1px solid var(--line);">
-                        <div class="carousel-slide">
-                            <img src="https://images.unsplash.com/photo-1600420870295-5e00aac0be39?w=1000&q=80&auto=format&fit=crop" class="w-full h-72 sm:h-96 object-cover" alt="Gedung perpustakaan modern">
-                        </div>
-                        <div class="carousel-slide">
-                            <img src="https://images.unsplash.com/photo-1501503069356-3c6b82a17d89?w=1000&q=80&auto=format&fit=crop" class="w-full h-72 sm:h-96 object-cover" alt="Siswa membaca bersama">
-                        </div>
-                        <div class="carousel-slide">
-                            <img src="https://images.unsplash.com/photo-1741707596397-efaae09503b5?w=1000&q=80&auto=format&fit=crop" class="w-full h-72 sm:h-96 object-cover" alt="Siswa belajar di ruang baca">
-                        </div>
-                        <div class="carousel-slide">
-                            <img src="https://images.unsplash.com/photo-1514513452089-17f8a9771ee8?w=1000&q=80&auto=format&fit=crop" class="w-full h-72 sm:h-96 object-cover" alt="Aktivitas di dalam perpustakaan">
-                        </div>
-                        <div class="carousel-slide">
-                            <img src="https://images.unsplash.com/photo-1700145872464-4beb41df93a3?w=1000&q=80&auto=format&fit=crop" class="w-full h-72 sm:h-96 object-cover" alt="Ruang baca dengan kursi">
-                        </div>
-                    </div>
-
-                    <button id="carouselPrev" class="carousel-arrow absolute left-3 top-1/2 -translate-y-1/2"><i class="fa-solid fa-chevron-left"></i></button>
-                    <button id="carouselNext" class="carousel-arrow absolute right-3 top-1/2 -translate-y-1/2"><i class="fa-solid fa-chevron-right"></i></button>
-
-                    <div id="carouselDots" class="flex items-center justify-center gap-2 mt-4"></div>
+            <div class="relative z-10 max-w-6xl mx-auto">
+                <div class="text-center max-w-2xl mx-auto space-y-3 reveal">
+                    <span class="text-xs font-bold tracking-widest uppercase" style="color: var(--blue-600);">Tentang</span>
+                    <h2 class="text-2xl sm:text-3xl font-black" style="color: var(--ink-900);">Perpustakaan SMK Negeri 17 Jakarta</h2>
                 </div>
 
-                <!-- Teks -->
-                <div class="lg:col-span-5 space-y-4">
-                    <p class="text-xs sm:text-sm leading-relaxed" style="color: var(--ink-700);">
-                        Perpustakaan SMK Negeri 17 Jakarta hadir sebagai ruang belajar dan literasi digital bagi seluruh siswa. Koleksi buku disusun rapi, ruang baca nyaman, dan kini presensi kunjungan dilakukan secara digital lewat pemindaian barcode kartu anggota.
-                    </p>
-                    <p class="text-xs sm:text-sm leading-relaxed" style="color: var(--ink-700);">
-                        Dengan sistem ini, data kunjungan tercatat akurat dan pengelola dapat memantau tingkat keaktifan membaca siswa dari waktu ke waktu.
-                    </p>
+                <div class="grid lg:grid-cols-12 gap-8 items-center mt-12 reveal">
+                    <!-- Carousel -->
+                    <div class="lg:col-span-7 relative">
+                        <div id="carouselTrack" class="carousel-track rounded-3xl" style="border: 1px solid var(--line);">
+                            <div class="carousel-slide">
+                                <img src="https://images.unsplash.com/photo-1600420870295-5e00aac0be39?w=1000&q=80&auto=format&fit=crop" class="w-full h-72 sm:h-96 object-cover" alt="Gedung perpustakaan modern">
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="https://images.unsplash.com/photo-1501503069356-3c6b82a17d89?w=1000&q=80&auto=format&fit=crop" class="w-full h-72 sm:h-96 object-cover" alt="Siswa membaca bersama">
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="https://images.unsplash.com/photo-1741707596397-efaae09503b5?w=1000&q=80&auto=format&fit=crop" class="w-full h-72 sm:h-96 object-cover" alt="Siswa belajar di ruang baca">
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="https://images.unsplash.com/photo-1514513452089-17f8a9771ee8?w=1000&q=80&auto=format&fit=crop" class="w-full h-72 sm:h-96 object-cover" alt="Aktivitas di dalam perpustakaan">
+                            </div>
+                            <div class="carousel-slide">
+                                <img src="https://images.unsplash.com/photo-1700145872464-4beb41df93a3?w=1000&q=80&auto=format&fit=crop" class="w-full h-72 sm:h-96 object-cover" alt="Ruang baca dengan kursi">
+                            </div>
+                        </div>
+
+                        <button id="carouselPrev" class="carousel-arrow absolute left-3 top-1/2 -translate-y-1/2"><i class="fa-solid fa-chevron-left"></i></button>
+                        <button id="carouselNext" class="carousel-arrow absolute right-3 top-1/2 -translate-y-1/2"><i class="fa-solid fa-chevron-right"></i></button>
+
+                        <div id="carouselDots" class="flex items-center justify-center gap-2 mt-4"></div>
+                    </div>
+
+                    <!-- Teks -->
+                    <div class="lg:col-span-5 space-y-4">
+                        <p class="text-xs sm:text-sm leading-relaxed" style="color: var(--ink-700);">
+                            Perpustakaan SMK Negeri 17 Jakarta hadir sebagai ruang belajar dan literasi digital bagi seluruh siswa. Koleksi buku disusun rapi, ruang baca nyaman, dan kini presensi kunjungan dilakukan secara digital lewat pemindaian barcode kartu anggota.
+                        </p>
+                        <p class="text-xs sm:text-sm leading-relaxed" style="color: var(--ink-700);">
+                            Dengan sistem ini, data kunjungan tercatat akurat dan pengelola dapat memantau tingkat keaktifan membaca siswa dari waktu ke waktu.
+                        </p>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- ===================== RAK BUKU INTERAKTIF ===================== -->
-        <section id="rak-buku" class="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto" style="background: var(--sky-50);">
-            <div class="text-center max-w-2xl mx-auto space-y-3 reveal">
-                <span class="text-xs font-bold tracking-widest uppercase" style="color: var(--blue-600);">Rak Buku</span>
-                <h2 class="text-2xl sm:text-3xl font-black" style="color: var(--ink-900);">Klik Buku untuk Melihat Detailnya</h2>
-                <p class="text-xs sm:text-sm leading-relaxed" style="color: var(--muted);">
-                    Sebagian koleksi yang tersedia di perpustakaan. Sentuh salah satu buku untuk membaca sinopsis singkatnya.
-                </p>
+        <section id="rak-buku" class="relative overflow-hidden py-16 sm:py-24 px-4 sm:px-6 lg:px-8" style="background: var(--sky-50);">
+
+            <div class="particles-layer" aria-hidden="true">
+                <i class="fa-solid fa-graduation-cap particle" style="top:10%; left:92%; font-size:24px; animation-duration:12s;"></i>
+                <i class="fa-solid fa-quote-right particle gold" style="top:80%; left:4%; font-size:20px; animation-duration:14s; animation-delay:.6s;"></i>
             </div>
 
-            <div class="mt-12 reveal">
-                <div id="rakBuku" class="flex items-end justify-center gap-1.5 sm:gap-2 flex-wrap px-2 pb-3"></div>
-                <div class="shelf-plank h-4 max-w-5xl mx-auto"></div>
+            <div class="relative z-10 max-w-6xl mx-auto">
+                <div class="text-center max-w-2xl mx-auto space-y-3 reveal">
+                    <span class="text-xs font-bold tracking-widest uppercase" style="color: var(--blue-600);">Rak Buku</span>
+                    <h2 class="text-2xl sm:text-3xl font-black" style="color: var(--ink-900);">Klik Buku untuk Melihat Detailnya</h2>
+                    <p class="text-xs sm:text-sm leading-relaxed" style="color: var(--muted);">
+                        Sebagian koleksi yang tersedia di perpustakaan. Sentuh salah satu buku untuk membaca sinopsis singkatnya.
+                    </p>
+                </div>
+
+                <div class="mt-12 reveal">
+                    <div id="rakBuku" class="flex items-end justify-center gap-1.5 sm:gap-2 flex-wrap px-2 pb-3"></div>
+                    <div class="shelf-plank h-4 max-w-5xl mx-auto"></div>
+                </div>
             </div>
         </section>
 
@@ -572,131 +715,120 @@
         </section>
 
         <!-- ===================== MOTIVASI MEMBACA ===================== -->
-        <section class="pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-            <div class="text-center max-w-2xl mx-auto space-y-3 reveal">
-                <span class="text-xs font-bold tracking-widest uppercase" style="color: var(--blue-600);">Motivasi</span>
-                <h2 class="text-2xl sm:text-3xl font-black" style="color: var(--ink-900);">Semangat Membaca Setiap Hari</h2>
+        <section class="relative overflow-hidden pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8">
+
+            <div class="particles-layer" aria-hidden="true">
+                <i class="fa-solid fa-star particle gold" style="top:6%; left:88%; font-size:16px; animation-duration:10s;"></i>
+                <i class="fa-solid fa-feather-pointed particle" style="top:70%; left:3%; font-size:20px; animation-duration:13s; animation-delay:.5s;"></i>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-6 mt-12">
-                <div class="p-6 rounded-3xl bg-white reveal" style="border: 1px solid var(--line);">
-                    <i class="fa-solid fa-quote-left text-lg mb-4" style="color: var(--blue-500);"></i>
-                    <p class="text-sm font-semibold leading-relaxed" style="color: var(--ink-900);">
-                        "Satu buku, satu pena, satu anak, dan satu guru dapat mengubah dunia."
-                    </p>
-                    <p class="mt-3 text-[11px] font-bold" style="color: var(--muted);">— Malala Yousafzai</p>
+            <div class="relative z-10 max-w-6xl mx-auto">
+                <div class="text-center max-w-2xl mx-auto space-y-3 reveal">
+                    <span class="text-xs font-bold tracking-widest uppercase" style="color: var(--blue-600);">Motivasi</span>
+                    <h2 class="text-2xl sm:text-3xl font-black" style="color: var(--ink-900);">Semangat Membaca Setiap Hari</h2>
                 </div>
-                <div class="p-6 rounded-3xl bg-white reveal" style="border: 1px solid var(--line);">
-                    <i class="fa-solid fa-quote-left text-lg mb-4" style="color: var(--cyan-400);"></i>
-                    <p class="text-sm font-semibold leading-relaxed" style="color: var(--ink-900);">
-                        "Membaca adalah jendela dunia, dan teknologi adalah kunci untuk mempermudah jalannya."
-                    </p>
-                    <p class="mt-3 text-[11px] font-bold" style="color: var(--muted);">— Perpustakaan Digital School System</p>
-                </div>
-                <div class="p-6 rounded-3xl bg-white reveal" style="border: 1px solid var(--line);">
-                    <i class="fa-solid fa-quote-left text-lg mb-4" style="color: var(--teal);"></i>
-                    <p class="text-sm font-semibold leading-relaxed" style="color: var(--ink-900);">
-                        "Orang yang tidak membaca hanya hidup satu kali. Orang yang membaca hidup ribuan kali."
-                    </p>
-                    <p class="mt-3 text-[11px] font-bold" style="color: var(--muted);">— Pepatah Literasi</p>
+
+                <div class="grid md:grid-cols-3 gap-6 mt-12">
+                    <div class="p-6 rounded-3xl bg-white reveal" style="border: 1px solid var(--line); border-top: 3px solid var(--blue-500);">
+                        <i class="fa-solid fa-quote-left text-lg mb-4" style="color: var(--blue-500);"></i>
+                        <p class="text-sm font-semibold leading-relaxed" style="color: var(--ink-900);">
+                            "Satu buku, satu pena, satu anak, dan satu guru dapat mengubah dunia."
+                        </p>
+                        <p class="mt-3 text-[11px] font-bold" style="color: var(--muted);">— Malala Yousafzai</p>
+                    </div>
+                    <div class="p-6 rounded-3xl bg-white reveal" style="border: 1px solid var(--line); border-top: 3px solid var(--gold);">
+                        <i class="fa-solid fa-quote-left text-lg mb-4" style="color: var(--gold);"></i>
+                        <p class="text-sm font-semibold leading-relaxed" style="color: var(--ink-900);">
+                            "Membaca adalah jendela dunia, dan teknologi adalah kunci untuk mempermudah jalannya."
+                        </p>
+                        <p class="mt-3 text-[11px] font-bold" style="color: var(--muted);">— Perpustakaan Digital School System</p>
+                    </div>
+                    <div class="p-6 rounded-3xl bg-white reveal" style="border: 1px solid var(--line); border-top: 3px solid var(--teal);">
+                        <i class="fa-solid fa-quote-left text-lg mb-4" style="color: var(--teal);"></i>
+                        <p class="text-sm font-semibold leading-relaxed" style="color: var(--ink-900);">
+                            "Orang yang tidak membaca hanya hidup satu kali. Orang yang membaca hidup ribuan kali."
+                        </p>
+                        <p class="mt-3 text-[11px] font-bold" style="color: var(--muted);">— Pepatah Literasi</p>
+                    </div>
                 </div>
             </div>
         </section>
 
     </main>
-    
-    <!-- ===================== LOGIN MANUAL (EMAIL & PASSWORD) ===================== -->
-<section class="px-4 sm:px-6 lg:px-8 -mt-4 pb-14 lg:pb-20">
-    <div class="max-w-md mx-auto reveal">
-        <div class="scanner-shell p-4 sm:p-5 rounded-3xl">
 
-            <div class="flex items-center justify-between mb-4 px-1">
-                <span class="text-xs font-bold flex items-center gap-1.5" style="color: var(--ink-900);">
-                    <i class="fa-solid fa-lock" style="color: var(--blue-600);"></i>
-                    Login Manual
-                </span>
-                <span class="text-[11px] font-semibold" style="color: var(--muted);">
-                    Untuk Admin
-                </span>
+    <!-- ===================== LOGIN MANUAL (EMAIL & PASSWORD SAJA) ===================== -->
+    <section class="px-4 sm:px-6 lg:px-8 -mt-4 pb-14 lg:pb-20">
+        <div class="max-w-md mx-auto reveal">
+            <div class="scanner-shell p-4 sm:p-5 rounded-3xl">
+
+                <div class="flex items-center justify-between mb-4 px-1">
+                    <span class="text-xs font-bold flex items-center gap-1.5" style="color: var(--ink-900);">
+                        <i class="fa-solid fa-lock" style="color: var(--blue-600);"></i>
+                        Login Manual
+                    </span>
+                    <span class="text-[11px] font-semibold" style="color: var(--muted);">
+                        Khusus Admin
+                    </span>
+                </div>
+
+                @if($errors->any())
+                    <div class="mb-4 p-3 rounded-2xl text-xs font-semibold"
+                         style="background:#FEF2F2; border:1px solid #FECACA; color:#B91C1C;">
+                        @foreach($errors->all() as $error)
+                            <p class="flex items-center gap-2"><i class="fa-solid fa-circle-exclamation"></i> {{ $error }}</p>
+                        @endforeach
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('login.authenticate', ['role' => 'admin']) }}" class="space-y-3">
+                    @csrf
+
+                    <div>
+                        <label for="email" class="text-[11px] font-bold block mb-1.5 px-1" style="color: var(--ink-700);">
+                            Email
+                        </label>
+                        <div class="relative">
+                            <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-xs" style="color: var(--muted);"></i>
+                            <input type="email" name="email" id="email" required autocomplete="username"
+                                   value="{{ old('email') }}"
+                                   placeholder="nama@sekolah.sch.id"
+                                   class="w-full pl-10 pr-4 py-3 rounded-xl text-xs font-semibold outline-none transition"
+                                   style="border: 1px solid var(--line); color: var(--ink-900);">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="password" class="text-[11px] font-bold block mb-1.5 px-1" style="color: var(--ink-700);">
+                            Password
+                        </label>
+                        <div class="relative">
+                            <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-xs" style="color: var(--muted);"></i>
+                            <input type="password" name="password" id="password" required autocomplete="current-password"
+                                   placeholder="••••••••"
+                                   class="w-full pl-10 pr-11 py-3 rounded-xl text-xs font-semibold outline-none transition"
+                                   style="border: 1px solid var(--line); color: var(--ink-900);">
+                            <button type="button" id="togglePassword"
+                                    class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs" style="color: var(--muted);">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <label class="flex items-center gap-2 px-1 py-1 cursor-pointer">
+                        <input type="checkbox" name="remember" class="rounded" style="accent-color: var(--blue-600);">
+                        <span class="text-[11px] font-semibold" style="color: var(--muted);">Ingat saya</span>
+                    </label>
+
+                    <button type="submit"
+                            class="w-full py-3 rounded-xl text-white text-xs font-bold transition shadow-md flex items-center justify-center gap-2"
+                            style="background: linear-gradient(135deg, var(--blue-500), var(--cyan-400)); box-shadow: 0 10px 25px -10px rgba(47,128,237,0.55);">
+                        <i class="fa-solid fa-right-to-bracket"></i> Masuk
+                    </button>
+                </form>
+
             </div>
-
-            @if($errors->any())
-                <div class="mb-4 p-3 rounded-2xl text-xs font-semibold"
-                     style="background:#FEF2F2; border:1px solid #FECACA; color:#B91C1C;">
-                    @foreach($errors->all() as $error)
-                        <p class="flex items-center gap-2"><i class="fa-solid fa-circle-exclamation"></i> {{ $error }}</p>
-                    @endforeach
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('login.authenticate', ['role' => request('role', 'admin')]) }}" class="space-y-3">
-                @csrf
-
-                <div>
-                    <label class="text-[11px] font-bold block mb-1.5 px-1" style="color: var(--ink-700);">
-                        Masuk sebagai
-                    </label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <label class="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition"
-                               style="border: 1px solid var(--line); color: var(--blue-700);"
-                               id="roleLabelAdmin">
-                            <input type="radio" name="role" value="admin" class="hidden role-radio" checked>
-                            <i class="fa-solid fa-user-shield"></i> Admin
-                        </label>
-                        <label class="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition"
-                               style="border: 1px solid var(--line); color: var(--blue-700);"
-                               id="roleLabelPetugas">
-                            <input type="radio" name="role" value="petugas" class="hidden role-radio">
-                        </label>
-                    </div>
-                </div>
-
-                <div>
-                    <label for="email" class="text-[11px] font-bold block mb-1.5 px-1" style="color: var(--ink-700);">
-                        Email
-                    </label>
-                    <div class="relative">
-                        <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-xs" style="color: var(--muted);"></i>
-                        <input type="email" name="email" id="email" required autocomplete="username"
-                               value="{{ old('email') }}"
-                               placeholder="nama@sekolah.sch.id"
-                               class="w-full pl-10 pr-4 py-3 rounded-xl text-xs font-semibold outline-none transition"
-                               style="border: 1px solid var(--line); color: var(--ink-900);">
-                    </div>
-                </div>
-
-                <div>
-                    <label for="password" class="text-[11px] font-bold block mb-1.5 px-1" style="color: var(--ink-700);">
-                        Password
-                    </label>
-                    <div class="relative">
-                        <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-xs" style="color: var(--muted);"></i>
-                        <input type="password" name="password" id="password" required autocomplete="current-password"
-                               placeholder="••••••••"
-                               class="w-full pl-10 pr-11 py-3 rounded-xl text-xs font-semibold outline-none transition"
-                               style="border: 1px solid var(--line); color: var(--ink-900);">
-                        <button type="button" id="togglePassword"
-                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs" style="color: var(--muted);">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <label class="flex items-center gap-2 px-1 py-1 cursor-pointer">
-                    <input type="checkbox" name="remember" class="rounded" style="accent-color: var(--blue-600);">
-                    <span class="text-[11px] font-semibold" style="color: var(--muted);">Ingat saya</span>
-                </label>
-
-                <button type="submit"
-                        class="w-full py-3 rounded-xl text-white text-xs font-bold transition shadow-md flex items-center justify-center gap-2"
-                        style="background: linear-gradient(135deg, var(--blue-500), var(--cyan-400)); box-shadow: 0 10px 25px -10px rgba(47,128,237,0.55);">
-                    <i class="fa-solid fa-right-to-bracket"></i> Masuk
-                </button>
-            </form>
-
         </div>
-    </div>
-</section>
+    </section>
 
     <script>
         /* =========================================================
@@ -985,6 +1117,9 @@
             }
         });
 
+        /* =========================================================
+           CAROUSEL "TENTANG"
+        ========================================================= */
         (function () {
             const track = document.getElementById('carouselTrack');
             const slides = track.querySelectorAll('.carousel-slide');
@@ -1025,42 +1160,24 @@
                 goToSlide(index);
             });
         })();
-/* =========================================================
-   LOGIN MANUAL — toggle role & show/hide password
-========================================================= */
-(function () {
-    const radios = document.querySelectorAll('.role-radio');
-    const form = document.querySelector('form[action*="login"]');
 
-    function updateRoleStyle() {
-        document.getElementById('roleLabelAdmin').style.background =
-            document.querySelector('input[value="admin"]').checked ? 'var(--sky-50)' : '#fff';
-        document.getElementById('roleLabelPetugas').style.background =
-            document.querySelector('input[value="petugas"]').checked ? 'var(--sky-50)' : '#fff';
-    }
-
-    radios.forEach(r => {
-        r.addEventListener('change', function () {
-            updateRoleStyle();
-            if (form) {
-                form.action = form.action.replace(/\/(admin|petugas)$/, '/' + this.value);
+        /* =========================================================
+           LOGIN MANUAL — show/hide password
+        ========================================================= */
+        (function () {
+            const togglePw = document.getElementById('togglePassword');
+            const pwInput = document.getElementById('password');
+            if (togglePw && pwInput) {
+                togglePw.addEventListener('click', function () {
+                    const isHidden = pwInput.type === 'password';
+                    pwInput.type = isHidden ? 'text' : 'password';
+                    this.innerHTML = isHidden
+                        ? '<i class="fa-solid fa-eye-slash"></i>'
+                        : '<i class="fa-solid fa-eye"></i>';
+                });
             }
-        });
-    });
-    updateRoleStyle();
+        })();
 
-    const togglePw = document.getElementById('togglePassword');
-    const pwInput = document.getElementById('password');
-    if (togglePw && pwInput) {
-        togglePw.addEventListener('click', function () {
-            const isHidden = pwInput.type === 'password';
-            pwInput.type = isHidden ? 'text' : 'password';
-            this.innerHTML = isHidden
-                ? '<i class="fa-solid fa-eye-slash"></i>'
-                : '<i class="fa-solid fa-eye"></i>';
-        });
-    }
-})();
         /* =========================================================
            RAK BUKU INTERAKTIF
         ========================================================= */
@@ -1072,7 +1189,7 @@
                 { judul: 'Sapiens', penulis: 'Yuval Noah Harari', kategori: 'Non-Fiksi', warna: '#2F80ED', desc: 'Menelusuri perjalanan panjang manusia dari zaman purba hingga era modern.' },
                 { judul: 'Filosofi Teras', penulis: 'Henry Manampiring', kategori: 'Pengembangan Diri', warna: '#38BDF8', desc: 'Pengantar filsafat Stoa yang relevan untuk mengelola emosi di kehidupan sehari-hari.' },
                 { judul: 'Cantik Itu Luka', penulis: 'Eka Kurniawan', kategori: 'Fiksi', warna: '#0B2545', desc: 'Kisah magis realis tentang empat generasi perempuan di sebuah kota kecil.' },
-                { judul: 'Atomic Habits', penulis: 'James Clear', kategori: 'Pengembangan Diri', warna: '#F59E0B', desc: 'Panduan praktis membangun kebiasaan kecil yang berdampak besar bagi kehidupan.' },
+                { judul: 'Atomic Habits', penulis: 'James Clear', kategori: 'Pengembangan Diri', warna: '#C9932E', desc: 'Panduan praktis membangun kebiasaan kecil yang berdampak besar bagi kehidupan.' },
                 { judul: 'Ronggeng Dukuh Paruk', penulis: 'Ahmad Tohari', kategori: 'Fiksi', warna: '#1D6FE0', desc: 'Potret budaya dan pergulatan hidup seorang penari ronggeng di pedesaan Jawa.' },
                 { judul: 'Sains Populer', penulis: 'Tim Editor', kategori: 'Sains', warna: '#0D9488', desc: 'Kumpulan artikel ringan yang mengupas fenomena sains dalam kehidupan sehari-hari.' },
                 { judul: 'Perahu Kertas', penulis: 'Dee Lestari', kategori: 'Fiksi', warna: '#154FA8', desc: 'Kisah perjalanan cinta dan mimpi dua anak muda yang penuh warna.' },
@@ -1117,6 +1234,7 @@
             modal.addEventListener('click', (e) => { if (e.target === modal) tutupModalBuku(); });
             document.addEventListener('keydown', (e) => { if (e.key === 'Escape') tutupModalBuku(); });
         })();
+
         document.addEventListener('DOMContentLoaded', function () {
             const elemen = document.querySelectorAll('.reveal');
             if (!('IntersectionObserver' in window)) {

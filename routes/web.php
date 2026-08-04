@@ -122,3 +122,33 @@ Route::get('/admin/profile/barcode/download', [AdminController::class, 'profileB
     ->name('admin.profile.barcode.download');
 
     Route::post('/login/{role}', [AuthController::class, 'authenticate'])->name('login.authenticate');
+
+use App\Http\Controllers\BukuDigitalController;
+
+Route::middleware(['auth'])->group(function () {
+
+    // === ROUTE ADMIN ===
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/buku', [BukuDigitalController::class, 'index'])->name('buku');
+        Route::post('/buku', [BukuDigitalController::class, 'store'])->name('buku.store');
+        Route::put('/buku/{id}', [BukuDigitalController::class, 'update'])->name('buku.update');
+        Route::delete('/buku/{id}', [BukuDigitalController::class, 'destroy'])->name('buku.destroy');
+        Route::get('/buku/{id}/baca', [BukuDigitalController::class, 'baca'])->name('buku.baca');
+    });
+
+    // === ROUTE PETUGAS ===
+    Route::prefix('petugas')->name('petugas.')->group(function () {
+        Route::get('/buku', [BukuDigitalController::class, 'index'])->name('buku');
+        Route::post('/buku', [BukuDigitalController::class, 'store'])->name('buku.store');
+        Route::put('/buku/{id}', [BukuDigitalController::class, 'update'])->name('buku.update');
+        Route::delete('/buku/{id}', [BukuDigitalController::class, 'destroy'])->name('buku.destroy');
+        Route::get('/buku/{id}/baca', [BukuDigitalController::class, 'baca'])->name('buku.baca');
+    });
+
+    // === ROUTE SISWA (Hanya Read & Baca) ===
+    Route::prefix('siswa')->name('siswa.')->group(function () {
+        Route::get('/buku', [BukuDigitalController::class, 'index'])->name('buku');
+        Route::get('/buku/{id}/baca', [BukuDigitalController::class, 'baca'])->name('buku.baca');
+    });
+
+});

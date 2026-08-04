@@ -48,7 +48,10 @@
                        class="px-4 py-2 rounded-xl text-white/90 hover:bg-white/10 hover:text-white transition">
                         <i class="fa-solid fa-house mr-1.5 text-xs"></i> Dashboard
                     </a>
-
+                    <a href="{{ Route::has('siswa.buku') ? route('siswa.buku') : '#' }}"
+                       class="px-4 py-2 rounded-xl text-white/90 hover:bg-white/10 hover:text-white transition">
+                        <i class="fa-solid fa-book mr-1.5 text-xs"></i> Buku Digital
+                    </a>
                     <a href="{{ route('siswa.riwayat') }}"
                        class="px-4 py-2 rounded-xl bg-white/20 text-white font-semibold shadow-sm border border-white/30 backdrop-blur-md transition">
                         <i class="fa-solid fa-clock-rotate-left mr-1.5 text-xs"></i> Riwayat Kunjungan

@@ -33,56 +33,67 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col justify-between">
 
-    <nav class="animated-gradient text-white shadow-lg sticky top-0 z-50">
+<nav class="animated-gradient-green text-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-
+                
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white shadow-inner">
                         <i class="fa-solid fa-book-bookmark text-lg"></i>
                     </div>
                     <span class="font-extrabold text-xl tracking-wide text-white drop-shadow-sm">
-                        Perpustakaan <span class="text-xs font-semibold uppercase bg-white/20 px-2 py-0.5 rounded-md ml-1">Petugas</span>
+                        Perpustakaan
                     </span>
                 </div>
 
                 <div class="hidden md:flex items-center gap-1 font-medium text-sm">
-                    <a href="{{ Route::has('petugas.dashboard') ? route('petugas.dashboard') : '#' }}"
-                       class="px-4 py-2 rounded-xl text-emerald-100 hover:text-white hover:bg-white/10 transition">
-                        <i class="fa-solid fa-chart-pie mr-1.5 text-xs"></i> Dashboard
+                    <a href="{{ Route::has('petugas.dashboard') ? route('petugas.dashboard') : '#' }}" 
+                       class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('petugas.dashboard*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-emerald-100 hover:text-white hover:bg-white/10' }}">
+                        <i class="fa-solid fa-chart-pie text-xs"></i> Dashboard
                     </a>
-                    <a href="{{ Route::has('petugas.siswa.index') ? route('petugas.siswa.index') : '#' }}"
-                       class="px-4 py-2 rounded-xl bg-white/20 text-white font-semibold shadow-sm border border-white/20 backdrop-blur-sm transition">
-                        <i class="fa-solid fa-users mr-1.5 text-xs"></i> Kelola Siswa
+
+                    <a href="{{ Route::has('petugas.siswa.index') ? route('petugas.siswa.index') : (Route::has('petugas.siswa') ? route('petugas.siswa') : '#') }}" 
+                       class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('petugas.siswa*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-emerald-100 hover:text-white hover:bg-white/10' }}">
+                        <i class="fa-solid fa-users text-xs"></i> Data Siswa
                     </a>
-                    <a href="{{ Route::has('petugas.presensi') ? route('petugas.presensi') : '#' }}"
-                       class="px-4 py-2 rounded-xl text-emerald-100 hover:text-white hover:bg-white/10 transition">
-                        <i class="fa-solid fa-clipboard-user mr-1.5 text-xs"></i> Presensi
+
+                     <a href="{{ Route::has('petugas.buku') ? route('petugas.buku') : '#' }}" 
+                       class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('petugas.buku*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-emerald-100 hover:text-white hover:bg-white/10' }}">
+                        <i class="fa-solid fa-book text-xs"></i> Buku Digital
                     </a>
-                    <a href="{{ Route::has('petugas.laporan') ? route('petugas.laporan') : '#' }}"
-                       class="px-4 py-2 rounded-xl text-emerald-100 hover:text-white hover:bg-white/10 transition">
-                        <i class="fa-solid fa-file-lines mr-1.5 text-xs"></i> Laporan
+
+                    <a href="{{ Route::has('petugas.presensi') ? route('petugas.presensi') : '#' }}" 
+                       class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('petugas.presensi*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-emerald-100 hover:text-white hover:bg-white/10' }}">
+                        <i class="fa-solid fa-clipboard-user text-xs"></i> Presensi
+                    </a>
+
+                    <a href="{{ Route::has('petugas.laporan.harian') ? route('petugas.laporan.harian') : (Route::has('petugas.laporan') ? route('petugas.laporan') : '#') }}" 
+                       class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('petugas.laporan*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-emerald-100 hover:text-white hover:bg-white/10' }}">
+                        <i class="fa-solid fa-file-lines text-xs"></i> Laporan
                     </a>
                 </div>
 
                 <div class="flex items-center gap-3">
                     <div class="hidden sm:flex flex-col text-right">
                         <span class="text-xs font-bold leading-tight">{{ Auth::user()->name ?? 'Petugas' }}</span>
-                        <span class="text-[10px] text-emerald-200">Petugas Perpustakaan</span>
+                        <span class="text-[10px] text-emerald-200">Petugas Perpus</span>
                     </div>
 
-                    <a href="{{ Route::has('petugas.profile') ? route('petugas.profile') : '#' }}"
-                       title="Profil Petugas"
-                       class="w-9 h-9 rounded-full bg-white text-emerald-600 font-bold flex items-center justify-center text-sm shadow-md ring-2 ring-white/30 hover:ring-white hover:scale-105 active:scale-95 transition-all duration-200 group">
-                        <span class="group-hover:text-emerald-700">P</span>
+                    <a href="{{ Route::has('petugas.profile') ? route('petugas.profile') : '#' }}" 
+                       title="Lihat Profil Petugas" 
+                       class="w-9 h-9 rounded-full bg-white text-emerald-700 font-bold flex items-center justify-center text-sm shadow-md ring-2 ring-white/30 hover:ring-white hover:scale-105 active:scale-95 transition-all duration-200 group">
+                        <span class="group-hover:text-emerald-800">P</span>
                     </a>
-                </div>
-                <form action="{{ route('logout') }}" method="POST" class="inline">
+
+                    <div class="h-5 w-[1px] bg-white/20 hidden sm:block"></div>
+
+                    <form action="{{ route('logout') }}" method="POST" class="inline">
                         @csrf
-                        <button type="submit" title="Keluar" class="w-9 h-9 rounded-xl text-white flex items-center justify-center text-sm ">
+                        <button type="submit" title="Keluar" class="w-9 h-9 rounded-xl text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center text-sm transition">
                             <i class="fa-solid fa-right-from-bracket"></i>
                         </button>
                     </form>
+                </div>
 
             </div>
         </div>

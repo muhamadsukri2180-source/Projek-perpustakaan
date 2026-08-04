@@ -17,6 +17,8 @@
 
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        [x-cloak] { display: none !important; }
+        
         .animated-gradient {
             background: linear-gradient(-45deg, #1e3a8a, #2563eb, #3b82f6, #0284c7);
             background-size: 400% 400%;
@@ -29,58 +31,78 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased" x-data="{ activeTab: 'data-absensi', selectedSiswa: null, modalDetail: false, modalScan: false, searchHariIni: '' }">
+<body class="bg-slate-50 text-slate-800 antialiased" x-data="{ activeTab: 'data-absensi', selectedSiswa: null, modalDetail: false, modalScan: false }">
 
     <nav class="animated-gradient text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white shadow-inner">
-                        <i class="fa-solid fa-book-bookmark text-lg"></i>
-                    </div>
-                    <span class="font-extrabold text-xl tracking-wide text-white">Perpustakaan</span>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white shadow-inner">
+                    <i class="fa-solid fa-book-bookmark text-lg"></i>
                 </div>
-
-                <div class="hidden md:flex items-center gap-1 font-medium text-sm">
-                    <a href="{{ Route::has('admin.dashboard') ? route('admin.dashboard') : '#' }}" class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition">
-                        <i class="fa-solid fa-chart-pie mr-1.5 text-xs"></i> Dashboard
-                    </a>
-                    <a href="{{ Route::has('admin.siswa.index') ? route('admin.siswa.index') : '#' }}" class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition">
-                        <i class="fa-solid fa-users mr-1.5 text-xs"></i> Data Siswa
-                    </a>
-                        <a href="{{ Route::has('admin.petugas.index') ? route('admin.petugas.index') : '#' }}" 
-                        class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition {{ request()->routeIs('admin.petugas*') ? 'bg-white/20 font-bold text-white' : '' }}">
-                         <i class="fa-solid fa-user-tie mr-1.5 text-xs"></i> Kelola Petugas
-                    </a>
-                    <a href="{{ Route::has('admin.presensi') ? route('admin.presensi') : '#' }}" class="px-4 py-2 rounded-xl bg-white/20 text-white font-semibold shadow-sm border border-white/20 backdrop-blur-sm transition">
-                        <i class="fa-solid fa-clipboard-user mr-1.5 text-xs"></i> Presensi
-                    </a>
-                                        <a href="{{ Route::has('admin.laporan') ? route('admin.laporan.harian') : '#' }}" 
-                       class="px-4 py-2 rounded-xl text-blue-100 hover:text-white hover:bg-white/10 transition">
-                        <i class="fa-solid fa-file-lines mr-1.5 text-xs"></i> Laporan
-                    </a>
-                </div>
-
-                 <div class="flex items-center gap-3">
-                    <div class="hidden sm:flex flex-col text-right">
-                        <span class="text-xs font-bold leading-tight">Admin</span>
-                    </div>
-
-                    <a href="{{ Route::has('admin.profile') ? route('admin.profile') : '#' }}" 
-                       title="Lihat Profil Admin" 
-                       class="w-9 h-9 rounded-full bg-white text-blue-600 font-bold flex items-center justify-center text-sm shadow-md ring-2 ring-white/30 hover:ring-white hover:scale-105 active:scale-95 transition-all duration-200 group">
-                        <span class="group-hover:text-blue-700">A</span>
-                    </a>
-                </div>
-                <form action="{{ route('logout') }}" method="POST" class="inline">
-                        @csrf
-                        <button type="submit" title="Keluar" class="w-9 h-9 rounded-xl text-white flex items-center justify-center text-sm ">
-                            <i class="fa-solid fa-right-from-bracket"></i>
-                        </button>
-                    </form>
+                <span class="font-extrabold text-xl tracking-wide text-white drop-shadow-sm">
+                    Perpustakaan
+                </span>
             </div>
+
+            <div class="hidden md:flex items-center gap-1 font-medium text-sm">
+                <a href="{{ Route::has('admin.dashboard') ? route('admin.dashboard') : '#' }}" 
+                   class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('admin.dashboard*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-blue-100 hover:text-white hover:bg-white/10' }}">
+                    <i class="fa-solid fa-chart-pie text-xs"></i> Dashboard
+                </a>
+
+                <a href="{{ Route::has('admin.siswa.index') ? route('admin.siswa.index') : (Route::has('admin.siswa') ? route('admin.siswa') : '#') }}" 
+                   class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('admin.siswa*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-blue-100 hover:text-white hover:bg-white/10' }}">
+                    <i class="fa-solid fa-users text-xs"></i> Data Siswa
+                </a>
+                
+                 <a href="{{ Route::has('admin.buku') ? route('admin.buku') : (Route::has('admin.buku') ? route('admin.buku') : '#') }}" 
+                   class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('admin.buku*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-blue-100 hover:text-white hover:bg-white/10' }}">
+                    <i class="fa-solid fa-book-open text-xs"></i> Buku Digital
+                </a>
+
+                <a href="{{ Route::has('admin.petugas.index') ? route('admin.petugas.index') : '#' }}" 
+                   class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('admin.petugas*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-blue-100 hover:text-white hover:bg-white/10' }}">
+                    <i class="fa-solid fa-user-tie text-xs"></i> Kelola Petugas
+                </a>
+
+                <a href="{{ Route::has('admin.presensi') ? route('admin.presensi') : '#' }}" 
+                   class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('admin.presensi*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-blue-100 hover:text-white hover:bg-white/10' }}">
+                    <i class="fa-solid fa-clipboard-user text-xs"></i> Presensi
+                </a>
+
+                <a href="{{ Route::has('admin.laporan.harian') ? route('admin.laporan.harian') : (Route::has('admin.laporan') ? route('admin.laporan') : '#') }}" 
+                   class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('admin.laporan*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-blue-100 hover:text-white hover:bg-white/10' }}">
+                    <i class="fa-solid fa-file-lines text-xs"></i> Laporan
+                </a>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex flex-col text-right">
+                    <span class="text-xs font-bold leading-tight">Admin</span>
+                    <span class="text-[10px] text-blue-200">Administrator</span>
+                </div>
+
+                <a href="{{ Route::has('admin.profile') ? route('admin.profile') : '#' }}" 
+                   title="Lihat Profil Admin" 
+                   class="w-9 h-9 rounded-full bg-white text-blue-600 font-bold flex items-center justify-center text-sm shadow-md ring-2 ring-white/30 hover:ring-white hover:scale-105 active:scale-95 transition-all duration-200 group">
+                    <span class="group-hover:text-blue-700">A</span>
+                </a>
+
+                <div class="h-5 w-[1px] bg-white/20 hidden sm:block"></div>
+
+                <form action="{{ route('logout') }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" title="Keluar" class="w-9 h-9 rounded-xl text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center text-sm transition">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </form>
+            </div>
+
         </div>
-    </nav>
+    </div>
+</nav>
 
     <main class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
         
@@ -94,7 +116,6 @@
                 </h1>
                 <p class="text-slate-500 mt-1 text-sm font-medium">Data harian di-reset otomatis setiap jam 00:00 WIB.</p>
             </div>
-        
         </div>
 
         <div class="bg-white rounded-2xl p-2 shadow-sm border border-slate-200/80 mb-6 overflow-x-auto flex gap-2">
@@ -107,20 +128,20 @@
             
             <div class="h-6 w-[1px] bg-slate-200 my-auto mx-1"></div>
 
-            <button @click="activeTab = 'stat-pengunjung'" :class="activeTab === 'stat-pengunjung' ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-slate-600 hover:bg-slate-100'" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap">
+            <button @click="activeTab = 'stat-pengunjung'; renderCharts();" :class="activeTab === 'stat-pengunjung' ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-slate-600 hover:bg-slate-100'" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-chart-line"></i> Grafik Pengunjung
             </button>
-            <button @click="activeTab = 'stat-kelas'" :class="activeTab === 'stat-kelas' ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-slate-600 hover:bg-slate-100'" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap">
+            <button @click="activeTab = 'stat-kelas'; renderCharts();" :class="activeTab === 'stat-kelas' ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-slate-600 hover:bg-slate-100'" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-school"></i> Per Kelas
             </button>
-            <button @click="activeTab = 'stat-jurusan'" :class="activeTab === 'stat-jurusan' ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-slate-600 hover:bg-slate-100'" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap">
+            <button @click="activeTab = 'stat-jurusan'; renderCharts();" :class="activeTab === 'stat-jurusan' ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-slate-600 hover:bg-slate-100'" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-graduation-cap"></i> Per Jurusan
             </button>
         </div>
 
         <div class="space-y-6">
 
-            <div x-show="activeTab === 'data-absensi'" x-cloak class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            <div x-show="activeTab === 'data-absensi'" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                 <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">Presensi Hari Ini ({{ \Carbon\Carbon::now()->translatedFormat('d F Y') }})</h2>
@@ -186,8 +207,8 @@
                         <p class="text-xs text-slate-400">Arsip pencatatan histori presensi siswa</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <input type="date" name="tanggal_filter" value="{{ request('tanggal_filter') }}" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs outline-none">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-blue-700">Filter</button>
+                        <input type="date" name="tanggal_filter" value="{{ request('tanggal_filter') }}" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-blue-700 transition">Filter</button>
                     </div>
                 </form>
 
@@ -203,11 +224,11 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             @forelse($riwayatAbsensi as $history)
-                            <tr>
+                            <tr class="hover:bg-slate-50">
                                 <td class="py-3 px-4 font-bold text-slate-700">{{ \Carbon\Carbon::parse($history->tanggal)->format('d/m/Y') }}</td>
                                 <td class="py-3 px-4 font-semibold text-slate-800">{{ $history->siswa->nama ?? '-' }}</td>
                                 <td class="py-3 px-4">{{ $history->siswa->kelas->nama_kelas ?? '' }} - {{ $history->siswa->jurusan->nama_jurusan ?? '' }}</td>
-                                <td class="py-3 px-4 text-xs">{{ $history->waktu_masuk }} - {{ $history->waktu_keluar ?? 'Selesai' }}</td>
+                                <td class="py-3 px-4 text-xs">{{ $history->waktu_masuk }} - {{ $history->waktu_keluar ?? 'Belum Keluar' }}</td>
                             </tr>
                             @empty
                             <tr><td colspan="4" class="text-center py-6 text-slate-400 text-xs">Data riwayat tidak ditemukan.</td></tr>
@@ -215,17 +236,17 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="mt-4">{{ $riwayatAbsensi->links() }}</div>
+                <div class="mt-4">{{ $riwayatAbsensi->appends(request()->query())->links() }}</div>
             </div>
 
             <div x-show="activeTab === 'stat-pengunjung'" x-cloak class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                 <h2 class="text-lg font-bold text-slate-800 mb-1">Statistik Pengunjung (7 Hari Terakhir)</h2>
-                <div class="h-72"><canvas id="chartPengunjung"></canvas></div>
+                <div class="h-72 w-full"><canvas id="chartPengunjung"></canvas></div>
             </div>
 
             <div x-show="activeTab === 'stat-kelas'" x-cloak class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                 <h2 class="text-lg font-bold text-slate-800 mb-1">Statistik Kunjungan Per Kelas</h2>
-                <div class="h-72"><canvas id="chartKelas"></canvas></div>
+                <div class="h-72 w-full"><canvas id="chartKelas"></canvas></div>
             </div>
 
             <div x-show="activeTab === 'stat-jurusan'" x-cloak class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
@@ -293,7 +314,7 @@
                     alertDiv.classList.add('text-emerald-600');
                     alertDiv.innerText = data.message;
                     document.getElementById('barcode_input').value = '';
-                    setTimeout(() => { location.reload(); }, 1200);
+                    setTimeout(() => { location.reload(); }, 1000);
                 } else {
                     alertDiv.classList.add('text-red-600');
                     alertDiv.innerText = data.message;
@@ -303,46 +324,75 @@
             .catch(err => console.error(err));
         }
 
+        let chartPengunjungObj = null;
+        let chartKelasObj = null;
+        let chartJurusanObj = null;
+
+        function renderCharts() {
+            setTimeout(() => {
+                // Membaca array murni dari PHP menggunakan array_keys dan array_values
+                const labelsPengunjung = @json(array_keys($chartPengunjung ?? []));
+                const dataPengunjung = @json(array_values($chartPengunjung ?? []));
+
+                const labelsKelas = @json(array_keys($chartKelas ?? []));
+                const dataKelas = @json(array_values($chartKelas ?? []));
+
+                const labelsJurusan = @json(array_keys($chartJurusan ?? []));
+                const dataJurusan = @json(array_values($chartJurusan ?? []));
+
+                // 1. Chart Pengunjung
+                const ctx1 = document.getElementById('chartPengunjung');
+                if (ctx1) {
+                    if (chartPengunjungObj) chartPengunjungObj.destroy();
+                    chartPengunjungObj = new Chart(ctx1, {
+                        type: 'line',
+                        data: {
+                            labels: labelsPengunjung,
+                            datasets: [{ 
+                                label: 'Total Pengunjung', 
+                                data: dataPengunjung, 
+                                borderColor: '#2563eb', 
+                                backgroundColor: 'rgba(37, 99, 235, 0.1)', 
+                                fill: true, 
+                                tension: 0.3 
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+
+                // 2. Chart Kelas
+                const ctx2 = document.getElementById('chartKelas');
+                if (ctx2) {
+                    if (chartKelasObj) chartKelasObj.destroy();
+                    chartKelasObj = new Chart(ctx2, {
+                        type: 'bar',
+                        data: {
+                            labels: labelsKelas,
+                            datasets: [{ label: 'Jumlah Kunjungan', data: dataKelas, backgroundColor: '#3b82f6' }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+
+                // 3. Chart Jurusan
+                const ctx3 = document.getElementById('chartJurusan');
+                if (ctx3) {
+                    if (chartJurusanObj) chartJurusanObj.destroy();
+                    chartJurusanObj = new Chart(ctx3, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labelsJurusan,
+                            datasets: [{ data: dataJurusan, backgroundColor: ['#2563eb', '#06b6d4', '#f59e0b', '#10b981', '#6366f1'] }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+            }, 100);
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
-            // Data Grafik dari Controller
-            const dataPengunjung = @json(array_values($chartPengunjung));
-            const labelsPengunjung = @json(array_keys($chartPengunjung));
-
-            const labelsKelas = @json($chartKelas->pluck('nama_kelas'));
-            const dataKelas = @json($chartKelas->pluck('total_kunjungan'));
-
-            const labelsJurusan = @json($chartJurusan->pluck('nama_jurusan'));
-            const dataJurusan = @json($chartJurusan->pluck('total_kunjungan'));
-
-            // Chart 1: Pengunjung
-            new Chart(document.getElementById('chartPengunjung'), {
-                type: 'line',
-                data: {
-                    labels: labelsPengunjung,
-                    datasets: [{ label: 'Total Pengunjung', data: dataPengunjung, borderColor: '#2563eb', tension: 0.3, fill: false }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            // Chart 2: Per Kelas
-            new Chart(document.getElementById('chartKelas'), {
-                type: 'bar',
-                data: {
-                    labels: labelsKelas,
-                    datasets: [{ label: 'Jumlah Kunjungan', data: dataKelas, backgroundColor: '#3b82f6' }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            // Chart 3: Per Jurusan
-            new Chart(document.getElementById('chartJurusan'), {
-                type: 'doughnut',
-                data: {
-                    labels: labelsJurusan,
-                    datasets: [{ data: dataJurusan, backgroundColor: ['#2563eb', '#06b6d4', '#f59e0b', '#10b981', '#6366f1'] }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
+            renderCharts();
         });
     </script>
 </body>
