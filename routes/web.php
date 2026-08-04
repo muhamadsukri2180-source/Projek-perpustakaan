@@ -8,6 +8,7 @@ use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\BukuDigitalController;
 use App\Http\Controllers\GoogleBooksController;
+use App\Http\Controllers\KoleksiBacaanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -88,6 +89,7 @@ Route::middleware(['auth:web'])->prefix('admin')->name('admin.')->group(function
     // Google Books - Pencarian & Pembaca Buku Digital Online
     Route::get('/google-books', [GoogleBooksController::class, 'index'])->name('google-books');
     Route::get('/google-books/search', [GoogleBooksController::class, 'search'])->name('google-books.search');
+    Route::get('/google-books/recommendations', [GoogleBooksController::class, 'recommendations'])->name('google-books.recommendations');
     Route::post('/google-books/simpan', [GoogleBooksController::class, 'store'])->name('google-books.store');
     Route::delete('/google-books/{id}', [GoogleBooksController::class, 'destroy'])->name('google-books.destroy');
 });
@@ -138,6 +140,7 @@ Route::middleware(['auth:petugas'])->prefix('petugas')->name('petugas.')->group(
     // Google Books - Pencarian & Pembaca Buku Digital Online
     Route::get('/google-books', [GoogleBooksController::class, 'index'])->name('google-books');
     Route::get('/google-books/search', [GoogleBooksController::class, 'search'])->name('google-books.search');
+    Route::get('/google-books/recommendations', [GoogleBooksController::class, 'recommendations'])->name('google-books.recommendations');
     Route::post('/google-books/simpan', [GoogleBooksController::class, 'store'])->name('google-books.store');
     Route::delete('/google-books/{id}', [GoogleBooksController::class, 'destroy'])->name('google-books.destroy');
 });
@@ -157,4 +160,10 @@ Route::middleware(['auth:siswa'])->prefix('siswa')->name('siswa.')->group(functi
     // Google Books - Pencarian & Pembaca Buku Digital Online (Read-only untuk Siswa)
     Route::get('/google-books', [GoogleBooksController::class, 'index'])->name('google-books');
     Route::get('/google-books/search', [GoogleBooksController::class, 'search'])->name('google-books.search');
+    Route::get('/google-books/recommendations', [GoogleBooksController::class, 'recommendations'])->name('google-books.recommendations');
+
+    // Koleksi Bacaan Pribadi Siswa
+    Route::post('/koleksi-bacaan', [KoleksiBacaanController::class, 'store'])->name('koleksi-bacaan.store');
+    Route::put('/koleksi-bacaan/{id}', [KoleksiBacaanController::class, 'update'])->name('koleksi-bacaan.update');
+    Route::delete('/koleksi-bacaan/{id}', [KoleksiBacaanController::class, 'destroy'])->name('koleksi-bacaan.destroy');
 });

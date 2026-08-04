@@ -8,7 +8,7 @@
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,6 +37,25 @@
                             800: '#065f46',
                             900: '#064e3b',
                         }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                        'slide-in-right': 'slideInRight 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideInRight: {
+                            '0%': { opacity: '0', transform: 'translateX(30px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' }
+                        }
                     }
                 }
             }
@@ -64,6 +83,7 @@
 
         ::-webkit-scrollbar {
             width: 8px;
+            height: 8px;
         }
         ::-webkit-scrollbar-track {
             background: #f1f1f1; 
@@ -87,6 +107,76 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+
+        /* Horizontal scrolling carousels for recommendations */
+        .genre-scroll {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding-bottom: 0.75rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        .genre-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        .genre-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        .genre-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .genre-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .book-card-carousel {
+            min-width: 220px;
+            max-width: 220px;
+            flex-shrink: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .book-card-carousel:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        }
+
+        .genre-chip {
+            transition: all 0.3s ease;
+        }
+        .genre-chip.active {
+            background: linear-gradient(135deg, #047857, #10b981);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 14px rgba(4, 120, 87, 0.35);
+        }
+        .genre-chip:not(.active):hover {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #047857;
+        }
+
+        .scroll-btn {
+            transition: all 0.2s ease;
+        }
+        .scroll-btn:hover {
+            transform: scale(1.1);
+        }
+        .scroll-btn:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .skeleton-shimmer {
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
         }
     </style>
 </head>
@@ -212,37 +302,151 @@
                         </div>
                         <input type="text" id="search-input" name="q" 
                             class="block w-full pl-11 pr-32 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-petugas-500 focus:border-petugas-500 transition-all text-sm md:text-base"
-                            placeholder="Ketik judul buku, penulis, atau ISBN..." required minlength="2">
+                            placeholder="Cari judul buku, penulis, atau topik..." required minlength="2">
                         <button type="submit" 
                             class="absolute right-2 top-2 bottom-2 bg-petugas-600 hover:bg-petugas-700 text-white font-medium px-6 rounded-lg transition-colors shadow-sm flex items-center gap-2">
                             <span>Cari</span>
                             <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </div>
-                    <div class="mt-3 flex gap-2 justify-center text-xs text-slate-500">
-                        <span class="bg-slate-100 px-2 py-1 rounded cursor-pointer hover:bg-slate-200" onclick="quickSearch('Teknologi')">Teknologi</span>
-                        <span class="bg-slate-100 px-2 py-1 rounded cursor-pointer hover:bg-slate-200" onclick="quickSearch('Pendidikan')">Pendidikan</span>
-                        <span class="bg-slate-100 px-2 py-1 rounded cursor-pointer hover:bg-slate-200" onclick="quickSearch('Sains')">Sains</span>
-                        <span class="bg-slate-100 px-2 py-1 rounded cursor-pointer hover:bg-slate-200" onclick="quickSearch('Sejarah')">Sejarah</span>
-                    </div>
                 </form>
             </div>
 
+            <!-- Loading Indicator for Search -->
             <div id="search-loading" class="hidden py-12 flex flex-col items-center justify-center">
                 <div class="w-12 h-12 border-4 border-petugas-200 border-t-petugas-600 rounded-full animate-spin mb-4"></div>
                 <p class="text-slate-500 font-medium">Mencari buku di Google Books...</p>
             </div>
 
-            <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            
-            <div id="search-empty" class="py-16 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-slate-100 shadow-sm border-dashed">
-                <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                    <i class="fa-brands fa-google text-4xl text-slate-300"></i>
+            <!-- ============================================ -->
+            <!-- RECOMMENDATIONS AREA (Server-Side Rendered)  -->
+            <!-- ============================================ -->
+            <div id="recommendationsArea">
+
+                @php
+                $genreMeta = [
+                    'fiction'   => ['label' => 'Fiksi Populer',      'icon' => 'fa-book-open',  'iconBg' => 'bg-rose-100 text-rose-600',     'chip_icon' => 'fa-book-open',  'chip_label' => 'Fiksi'],
+                    'science'   => ['label' => 'Sains & Teknologi',  'icon' => 'fa-flask',      'iconBg' => 'bg-cyan-100 text-cyan-600',     'chip_icon' => 'fa-flask',      'chip_label' => 'Sains & Teknologi'],
+                    'history'   => ['label' => 'Sejarah',            'icon' => 'fa-landmark',   'iconBg' => 'bg-amber-100 text-amber-600',   'chip_icon' => 'fa-landmark',   'chip_label' => 'Sejarah'],
+                    'art'       => ['label' => 'Seni & Desain',      'icon' => 'fa-palette',    'iconBg' => 'bg-violet-100 text-violet-600', 'chip_icon' => 'fa-palette',    'chip_label' => 'Seni & Desain'],
+                    'business'  => ['label' => 'Bisnis & Ekonomi',   'icon' => 'fa-briefcase',  'iconBg' => 'bg-emerald-100 text-emerald-600','chip_icon' => 'fa-briefcase', 'chip_label' => 'Bisnis'],
+                    'self-help' => ['label' => 'Pengembangan Diri',  'icon' => 'fa-brain',      'iconBg' => 'bg-sky-100 text-sky-600',       'chip_icon' => 'fa-brain',      'chip_label' => 'Pengembangan Diri'],
+                ];
+                $availableGenres = array_keys($recommendations ?? []);
+                @endphp
+
+                <!-- Genre Chips / Pills -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                            <i class="fa-solid fa-compass text-petugas-600"></i> Rekomendasi Genre
+                        </h2>
+                    </div>
+                    <div class="flex flex-wrap gap-2" id="genreChips">
+                        <button onclick="filterGenre('all')" class="genre-chip active px-4 py-2 rounded-full text-xs font-bold border border-slate-200 bg-white text-slate-600 flex items-center gap-2" data-genre="all">
+                            <i class="fa-solid fa-layer-group"></i> Semua Genre
+                        </button>
+                        @foreach($availableGenres as $gKey)
+                        @php $gMeta = $genreMeta[$gKey] ?? ['chip_icon'=>'fa-book','chip_label'=>$gKey]; @endphp
+                        <button onclick="filterGenre('{{ $gKey }}')" class="genre-chip px-4 py-2 rounded-full text-xs font-bold border border-slate-200 bg-white text-slate-600 flex items-center gap-2" data-genre="{{ $gKey }}">
+                            <i class="fa-solid {{ $gMeta['chip_icon'] }}"></i> {{ $gMeta['chip_label'] }}
+                        </button>
+                        @endforeach
+                    </div>
                 </div>
-                <h3 class="text-lg font-bold text-slate-700 mb-1">Mulai Pencarian</h3>
-                <p class="text-slate-500 max-w-sm text-sm">
-                    Gunakan kolom pencarian di atas untuk menemukan jutaan buku gratis dan berbayar dari Google Books.
-                </p>
+
+                <!-- Genre Sections - Server-side rendered -->
+                @if(!empty($recommendations))
+                <div id="genreSections" class="space-y-6">
+                    @foreach($recommendations as $genreKey => $books)
+                    @php
+                        $meta = $genreMeta[$genreKey] ?? ['label'=>$genreKey,'icon'=>'fa-book','iconBg'=>'bg-slate-100 text-slate-600'];
+                        $sectionId = 'genre-section-' . $genreKey;
+                    @endphp
+                    <div id="{{ $sectionId }}" class="genre-section bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden" data-genre="{{ $genreKey }}">
+                        <div class="p-4 sm:p-5 pb-2 flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg {{ $meta['iconBg'] }} flex items-center justify-center text-sm">
+                                    <i class="fa-solid {{ $meta['icon'] }}"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 text-sm">{{ $meta['label'] }}</h3>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button onclick="scrollGenre('{{ $sectionId }}', 'left')" class="scroll-btn w-7 h-7 rounded-lg bg-slate-100 hover:bg-petugas-50 text-slate-500 hover:text-petugas-600 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                                </button>
+                                <button onclick="scrollGenre('{{ $sectionId }}', 'right')" class="scroll-btn w-7 h-7 rounded-lg bg-slate-100 hover:bg-petugas-50 text-slate-500 hover:text-petugas-600 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="px-4 sm:px-5 pb-4">
+                            <div class="genre-scroll" id="scroll-{{ $sectionId }}">
+                                @foreach($books as $book)
+                                @php
+                                    $volId    = $book['volume_id'];
+                                    $jsTitle  = addslashes($book['title']);
+                                    $jsAuthor = addslashes($book['author_text']);
+                                    $jsCat    = addslashes($book['category']);
+                                    $jsCover  = addslashes($book['cover_url'] ?? '');
+                                    $jsReader = addslashes($book['reader_link'] ?? '');
+                                @endphp
+                                <div class="book-card-carousel bg-white rounded-xl overflow-hidden border border-slate-200 flex flex-col">
+                                    <div class="h-44 bg-slate-100 overflow-hidden relative flex items-center justify-center cursor-pointer"
+                                         onclick="openReader('{{ $volId }}', '{{ $jsTitle }}', '{{ $jsReader }}')">
+                                        @if(!empty($book['cover_url']))
+                                            <img src="{{ $book['cover_url'] }}" alt="Cover" class="h-full w-full object-cover" loading="lazy">
+                                        @else
+                                            <i class="fa-solid fa-book text-3xl text-slate-300"></i>
+                                        @endif
+                                        <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-slate-200">
+                                            {{ Str::limit($book['category'], 12) }}
+                                        </div>
+                                    </div>
+                                    <div class="p-3.5 flex-grow flex flex-col">
+                                        <h4 class="font-bold text-slate-800 text-sm mb-1 line-clamp-2 leading-tight">{{ e($book['title']) }}</h4>
+                                        <p class="text-[11px] text-slate-500 font-medium truncate mb-3"><i class="fa-solid fa-pen-nib text-[9px] mr-1"></i> {{ e($book['author_text']) }}</p>
+                                        <div class="grid grid-cols-2 gap-1.5 mt-auto">
+                                            <button onclick="openReader('{{ $volId }}', '{{ $jsTitle }}', '{{ $jsReader }}')" class="bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white py-1.5 px-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 border border-emerald-100 shadow-sm">
+                                                <i class="fa-solid fa-book-open text-[10px]"></i> Baca
+                                            </button>
+                                            <button onclick="saveBook('{{ $volId }}', '{{ $jsTitle }}', '{{ $jsAuthor }}', '{{ $jsCat }}', '{{ $jsCover }}', '{{ $jsReader }}')" class="bg-petugas-600 hover:bg-petugas-700 text-white py-1.5 px-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 shadow-sm">
+                                                <i class="fa-solid fa-bookmark text-[10px]"></i> Simpan
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-10 text-center">
+                    <i class="fa-solid fa-book-open text-4xl text-slate-300 mb-3"></i>
+                    <p class="text-slate-500 font-medium">Rekomendasi buku tidak tersedia saat ini.</p>
+                    <p class="text-slate-400 text-sm mt-1">Coba cari buku menggunakan kolom pencarian di atas.</p>
+                </div>
+                @endif
+            </div>
+
+            <!-- ============================================ -->
+            <!-- SEARCH RESULTS AREA                          -->
+            <!-- ============================================ -->
+            <div id="searchResultsArea" class="hidden">
+                <div class="mb-4 flex items-center justify-between">
+                    <button onclick="backToRecommendations()" class="flex items-center gap-2 text-sm font-semibold text-petugas-600 hover:text-petugas-700 transition-colors group">
+                        <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                        Kembali ke Rekomendasi
+                    </button>
+                    <span id="searchResultCount" class="text-sm text-slate-500"></span>
+                </div>
+
+                <!-- Search Results Grid -->
+                <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Results will be injected here via JS -->
+                </div>
             </div>
         </div>
 
@@ -372,10 +576,22 @@
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         
         const routes = {
-            search: "{{ Route::has('petugas.google-books.search') ? route('petugas.google-books.search') : '/petugas/google-books/search' }}",
-            store: "{{ Route::has('petugas.google-books.store') ? route('petugas.google-books.store') : '/petugas/google-books' }}",
-            delete: "{{ url('/petugas/google-books') }}"
+            search: "{{ Route::has('petugas.google-books.search') ? route('petugas.google-books.search', [], false) : '/petugas/google-books/search' }}",
+            store: "{{ Route::has('petugas.google-books.store') ? route('petugas.google-books.store', [], false) : '/petugas/google-books' }}",
+            delete: "/petugas/google-books",
+            recs: "{{ Route::has('petugas.google-books.recommendations') ? route('petugas.google-books.recommendations', [], false) : '/petugas/google-books/recommendations' }}"
         };
+
+        const GENRES = [
+            { key: 'fiction',   label: 'Fiksi Populer',       icon: 'fa-book-open',  gradient: 'from-rose-500 to-pink-600',    iconBg: 'bg-rose-100 text-rose-600' },
+            { key: 'science',   label: 'Sains & Teknologi',   icon: 'fa-flask',      gradient: 'from-cyan-500 to-blue-600',    iconBg: 'bg-cyan-100 text-cyan-600' },
+            { key: 'history',   label: 'Sejarah',             icon: 'fa-landmark',   gradient: 'from-amber-500 to-orange-600', iconBg: 'bg-amber-100 text-amber-600' },
+            { key: 'art',       label: 'Seni & Desain',       icon: 'fa-palette',    gradient: 'from-violet-500 to-purple-600',iconBg: 'bg-violet-100 text-violet-600' },
+            { key: 'business',  label: 'Bisnis & Ekonomi',    icon: 'fa-briefcase',  gradient: 'from-emerald-500 to-green-600',iconBg: 'bg-emerald-100 text-emerald-600' },
+            { key: 'self-help', label: 'Pengembangan Diri',   icon: 'fa-brain',      gradient: 'from-sky-500 to-indigo-600',   iconBg: 'bg-sky-100 text-sky-600' },
+        ];
+
+        const genreCache = {};
 
         // --- TAB SWITCHING ---
         function switchTab(tabName) {
@@ -397,13 +613,161 @@
             }
         }
 
-        function quickSearch(term) {
-            document.getElementById('search-input').value = term;
-            document.getElementById('search-form').requestSubmit();
+        // ============================================================
+        // RECOMMENDATIONS SYSTEM
+        // ============================================================
+        async function loadAllRecommendations() {
+            const loading = document.getElementById('recsLoading');
+            const sections = document.getElementById('genreSections');
+
+            loading.classList.remove('hidden');
+            sections.innerHTML = '';
+
+            for (let i = 0; i < GENRES.length; i++) {
+                const genre = GENRES[i];
+                await loadGenreRecommendation(genre, i);
+            }
+
+            loading.classList.add('hidden');
+        }
+
+        async function loadGenreRecommendation(genre, index) {
+            if (genreCache[genre.key]) {
+                renderGenreSection(genre, genreCache[genre.key], index);
+                return;
+            }
+
+            try {
+                const url = new URL(routes.recs, window.location.origin);
+                url.searchParams.append('genre', genre.key);
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success && Array.isArray(data.books) && data.books.length > 0) {
+                    genreCache[genre.key] = data.books;
+                    renderGenreSection(genre, data.books, index);
+                }
+            } catch (error) {
+                console.error(`Failed to load genre ${genre.key}:`, error);
+            }
+        }
+
+        function renderGenreSection(genre, books, index) {
+            const sectionId = `genre-section-${genre.key}`;
+            
+            let cardsHTML = '';
+            books.forEach((book, cardIndex) => {
+                const coverImage = book.cover_url || '';
+                const safeTitle = (book.title || 'Tanpa Judul').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const author = book.author_text || 'Penulis tidak diketahui';
+                const safeAuthor = author.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const category = (Array.isArray(book.categories) && book.categories.length > 0) ? book.categories[0] : 'Umum';
+                const safeCategory = category.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeCover = coverImage.replace(/'/g, "\\'");
+                const readerLink = book.reader_link || book.preview_link || '';
+                const safeReader = readerLink.replace(/'/g, "\\'");
+
+                cardsHTML += `
+                    <div class="book-card-carousel bg-white rounded-xl overflow-hidden border border-slate-200 flex flex-col opacity-0 animate-slide-in-right" style="animation-delay: ${cardIndex * 0.05}s">
+                        <div class="h-44 bg-slate-100 overflow-hidden relative flex items-center justify-center cursor-pointer" onclick="openReader('${book.volume_id}', '${safeTitle}', '${safeReader}')">
+                            ${coverImage ? `<img src="${coverImage}" alt="Cover" class="h-full w-full object-cover">` : `<i class="fa-solid fa-book text-3xl text-slate-300"></i>`}
+                            <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-slate-200">
+                                ${category.split(' ')[0]}
+                            </div>
+                        </div>
+                        <div class="p-3.5 flex-grow flex flex-col">
+                            <h4 class="font-bold text-slate-800 text-sm mb-1 line-clamp-2 leading-tight" title="${book.title}">${book.title}</h4>
+                            <p class="text-[11px] text-slate-500 font-medium truncate mb-3"><i class="fa-solid fa-pen-nib text-[9px] mr-1 opacity-70"></i> ${author}</p>
+                            
+                            <div class="grid grid-cols-2 gap-1.5 mt-auto">
+                                <button onclick="openReader('${book.volume_id}', '${safeTitle}', '${safeReader}')" class="bg-petugas-50 hover:bg-petugas-600 text-petugas-700 hover:text-white py-1.5 px-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 border border-petugas-100 hover:border-petugas-600 shadow-sm">
+                                    <i class="fa-solid fa-book-open-reader text-[10px]"></i> Baca
+                                </button>
+                                <button onclick="saveBook('${book.volume_id}', '${safeTitle}', '${safeAuthor}', '${safeCategory}', '${safeCover}', '${safeReader}')" class="bg-petugas-600 hover:bg-petugas-700 text-white py-1.5 px-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 shadow-sm">
+                                    <i class="fa-solid fa-bookmark text-[10px]"></i> Simpan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const sectionHTML = `
+                <div id="${sectionId}" class="genre-section bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden animate-slide-up" data-genre="${genre.key}" style="animation-delay: ${index * 0.08}s">
+                    <div class="p-4 sm:p-5 pb-2 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg ${genre.iconBg} flex items-center justify-center text-sm">
+                                <i class="fa-solid ${genre.icon}"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm">${genre.label}</h3>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="scrollGenre('${sectionId}', 'left')" class="scroll-btn w-7 h-7 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-500 hover:text-emerald-600 flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                            </button>
+                            <button onclick="scrollGenre('${sectionId}', 'right')" class="scroll-btn w-7 h-7 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-500 hover:text-emerald-600 flex items-center justify-center transition-colors">
+                                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="px-4 sm:px-5 pb-4">
+                        <div class="genre-scroll" id="scroll-${sectionId}">
+                            ${cardsHTML}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            sections.insertAdjacentHTML('beforeend', sectionHTML);
+        }
+
+        function scrollGenre(sectionId, direction) {
+            const scrollContainer = document.getElementById(`scroll-${sectionId}`);
+            if (!scrollContainer) return;
+            const scrollAmount = 400;
+            scrollContainer.scrollBy({
+                left: direction === 'right' ? scrollAmount : -scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+
+        function filterGenre(genreKey) {
+            document.querySelectorAll('.genre-chip').forEach(chip => {
+                if (chip.dataset.genre === genreKey) {
+                    chip.classList.add('active');
+                } else {
+                    chip.classList.remove('active');
+                }
+            });
+
+            document.querySelectorAll('.genre-section').forEach(section => {
+                if (genreKey === 'all' || section.dataset.genre === genreKey) {
+                    section.style.display = '';
+                    section.classList.add('animate-fade-in');
+                } else {
+                    section.style.display = 'none';
+                    section.classList.remove('animate-fade-in');
+                }
+            });
+        }
+
+        function backToRecommendations() {
+            document.getElementById('searchResultsArea').classList.add('hidden');
+            document.getElementById('recommendationsArea').classList.remove('hidden');
+            document.getElementById('search-input').value = '';
+            document.getElementById('searchResultCount').textContent = '';
         }
 
         // --- SEARCH GOOGLE BOOKS ---
-        // FIX: backend mengirim { success, total_items, books }, bukan { items }
         async function searchBooks(event) {
             event.preventDefault();
             const query = document.getElementById('search-input').value.trim();
@@ -412,11 +776,12 @@
                 return;
             }
 
+            document.getElementById('recommendationsArea').classList.add('hidden');
+            document.getElementById('searchResultsArea').classList.remove('hidden');
+
             const resultsContainer = document.getElementById('search-results');
             const loadingIndicator = document.getElementById('search-loading');
-            const emptyState = document.getElementById('search-empty');
 
-            emptyState.classList.add('hidden');
             resultsContainer.innerHTML = '';
             loadingIndicator.classList.remove('hidden');
 
@@ -447,6 +812,7 @@
                 }
 
                 if (data.books && data.books.length > 0) {
+                    document.getElementById('searchResultCount').textContent = `${data.books.length} buku ditemukan untuk "${query}"`;
                     renderResults(data.books);
                 } else {
                     resultsContainer.innerHTML = `
@@ -465,8 +831,6 @@
         }
 
         // --- RENDER RESULTS ---
-        // FIX: field disesuaikan dengan struktur yang dikembalikan controller
-        // (volume_id, title, author_text, categories, page_count, short_desc, cover_url, preview_link, reader_link)
         function renderResults(books) {
             const container = document.getElementById('search-results');
             let html = '';
@@ -658,6 +1022,10 @@
                 }, 300);
             }, 3000);
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllRecommendations();
+        });
     </script>
 </body>
 </html>

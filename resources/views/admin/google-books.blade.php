@@ -7,7 +7,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -23,6 +23,9 @@
                     animation: {
                         'gradient': 'gradient 8s linear infinite',
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                        'slide-in-right': 'slideInRight 0.4s ease-out forwards',
                     },
                     keyframes: {
                         gradient: {
@@ -34,6 +37,18 @@
                                 'background-size': '200% 200%',
                                 'background-position': 'right center'
                             },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideInRight: {
+                            '0%': { opacity: '0', transform: 'translateX(30px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' }
                         }
                     }
                 }
@@ -82,6 +97,76 @@
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
+        }
+
+        /* Horizontal scroll carousels for admin recommendations */
+        .genre-scroll {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding-bottom: 0.75rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        .genre-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        .genre-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        .genre-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .genre-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .book-card-carousel {
+            min-width: 220px;
+            max-width: 220px;
+            flex-shrink: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .book-card-carousel:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        }
+
+        .genre-chip {
+            transition: all 0.3s ease;
+        }
+        .genre-chip.active {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 14px rgba(30, 58, 138, 0.35);
+        }
+        .genre-chip:not(.active):hover {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            color: #1e3a8a;
+        }
+
+        .scroll-btn {
+            transition: all 0.2s ease;
+        }
+        .scroll-btn:hover {
+            transform: scale(1.1);
+        }
+        .scroll-btn:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .skeleton-shimmer {
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
         }
     </style>
 </head>
@@ -205,18 +290,140 @@
                 <p>Mencari buku...</p>
             </div>
 
-            <!-- Empty / Initial State -->
-            <div id="emptySearchState" class="py-16 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-slate-100 shadow-sm border-dashed">
-                <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-4">
-                    <i class="fa-brands fa-google text-3xl text-blue-500"></i>
+            <!-- ============================================ -->
+            <!-- RECOMMENDATIONS AREA (Server-Side Rendered)  -->
+            <!-- ============================================ -->
+            <div id="recommendationsArea">
+
+                @php
+                $genreMeta = [
+                    'fiction'   => ['label' => 'Fiksi Populer',      'icon' => 'fa-book-open',  'iconBg' => 'bg-rose-100 text-rose-600',    'chip_icon' => 'fa-book-open',  'chip_label' => 'Fiksi'],
+                    'science'   => ['label' => 'Sains & Teknologi',   'icon' => 'fa-flask',      'iconBg' => 'bg-cyan-100 text-cyan-600',    'chip_icon' => 'fa-flask',      'chip_label' => 'Sains & Teknologi'],
+                    'history'   => ['label' => 'Sejarah',             'icon' => 'fa-landmark',   'iconBg' => 'bg-amber-100 text-amber-600',  'chip_icon' => 'fa-landmark',   'chip_label' => 'Sejarah'],
+                    'art'       => ['label' => 'Seni & Desain',       'icon' => 'fa-palette',    'iconBg' => 'bg-violet-100 text-violet-600','chip_icon' => 'fa-palette',    'chip_label' => 'Seni & Desain'],
+                    'business'  => ['label' => 'Bisnis & Ekonomi',    'icon' => 'fa-briefcase',  'iconBg' => 'bg-emerald-100 text-emerald-600','chip_icon' => 'fa-briefcase', 'chip_label' => 'Bisnis'],
+                    'self-help' => ['label' => 'Pengembangan Diri',   'icon' => 'fa-brain',      'iconBg' => 'bg-sky-100 text-sky-600',     'chip_icon' => 'fa-brain',      'chip_label' => 'Pengembangan Diri'],
+                ];
+                $availableGenres = array_keys($recommendations ?? []);
+                @endphp
+
+                <!-- Genre Chips / Pills -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                            <i class="fa-solid fa-compass text-blue-500"></i> Rekomendasi Genre
+                        </h2>
+                    </div>
+                    <div class="flex flex-wrap gap-2" id="genreChips">
+                        <button onclick="filterGenre('all')" class="genre-chip active px-4 py-2 rounded-full text-xs font-bold border border-slate-200 bg-white text-slate-600 flex items-center gap-2" data-genre="all">
+                            <i class="fa-solid fa-layer-group"></i> Semua Genre
+                        </button>
+                        @foreach($availableGenres as $gKey)
+                        @php $gMeta = $genreMeta[$gKey] ?? ['chip_icon'=>'fa-book','chip_label'=>$gKey]; @endphp
+                        <button onclick="filterGenre('{{ $gKey }}')" class="genre-chip px-4 py-2 rounded-full text-xs font-bold border border-slate-200 bg-white text-slate-600 flex items-center gap-2" data-genre="{{ $gKey }}">
+                            <i class="fa-solid {{ $gMeta['chip_icon'] }}"></i> {{ $gMeta['chip_label'] }}
+                        </button>
+                        @endforeach
+                    </div>
                 </div>
-                <h3 class="text-lg font-semibold text-slate-700 mb-1">Mulai Pencarian</h3>
-                <p class="text-slate-500 text-sm max-w-md">Ketik judul buku, nama penulis, atau topik di kotak pencarian di atas untuk menemukan buku dari Perpustakaan Digital.</p>
+
+                <!-- Genre Sections - Rendered server-side -->
+                @if(!empty($recommendations))
+                <div id="genreSections" class="space-y-6">
+                    @foreach($recommendations as $genreKey => $books)
+                    @php
+                        $meta = $genreMeta[$genreKey] ?? ['label'=>$genreKey,'icon'=>'fa-book','iconBg'=>'bg-slate-100 text-slate-600'];
+                        $sectionId = 'genre-section-' . $genreKey;
+                    @endphp
+                    <div id="{{ $sectionId }}" class="genre-section bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden" data-genre="{{ $genreKey }}">
+                        <div class="p-4 sm:p-5 pb-2 flex items-center justify-between">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg {{ $meta['iconBg'] }} flex items-center justify-center text-sm">
+                                    <i class="fa-solid {{ $meta['icon'] }}"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 text-sm">{{ $meta['label'] }}</h3>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button onclick="scrollGenre('{{ $sectionId }}', 'left')" class="scroll-btn w-7 h-7 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-600 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                                </button>
+                                <button onclick="scrollGenre('{{ $sectionId }}', 'right')" class="scroll-btn w-7 h-7 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-600 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="px-4 sm:px-5 pb-4">
+                            <div class="genre-scroll" id="scroll-{{ $sectionId }}">
+                                @foreach($books as $book)
+                                @php
+                                    $safeTitle  = e($book['title']);
+                                    $safeAuthor = e($book['author_text']);
+                                    $safeCat    = e($book['category']);
+                                    $safeCover  = e($book['cover_url'] ?? '');
+                                    $safeReader = e($book['reader_link'] ?? '');
+                                    $volId      = $book['volume_id'];
+                                    $jsTitle    = addslashes($book['title']);
+                                    $jsAuthor   = addslashes($book['author_text']);
+                                    $jsCat      = addslashes($book['category']);
+                                    $jsCover    = addslashes($book['cover_url'] ?? '');
+                                    $jsReader   = addslashes($book['reader_link'] ?? '');
+                                @endphp
+                                <div class="book-card-carousel bg-white rounded-xl overflow-hidden border border-slate-200 flex flex-col">
+                                    <div class="h-44 bg-slate-100 overflow-hidden relative flex items-center justify-center cursor-pointer"
+                                         onclick="openReader('{{ $volId }}', '{{ $jsTitle }}', '{{ $jsReader }}')">
+                                        @if($book['cover_url'])
+                                            <img src="{{ $book['cover_url'] }}" alt="Cover" class="h-full w-full object-cover" loading="lazy">
+                                        @else
+                                            <i class="fa-solid fa-book text-3xl text-slate-300"></i>
+                                        @endif
+                                        <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-slate-200">
+                                            {{ Str::limit($book['category'], 12) }}
+                                        </div>
+                                    </div>
+                                    <div class="p-3.5 flex-grow flex flex-col">
+                                        <h4 class="font-bold text-slate-800 text-sm mb-1 line-clamp-2 leading-tight" title="{{ $safeTitle }}">{{ $safeTitle }}</h4>
+                                        <p class="text-[11px] text-slate-500 font-medium truncate mb-3"><i class="fa-solid fa-pen-nib text-[9px] mr-1 opacity-70"></i> {{ $safeAuthor }}</p>
+                                        <div class="grid grid-cols-2 gap-1.5 mt-auto">
+                                            <button onclick="openReader('{{ $volId }}', '{{ $jsTitle }}', '{{ $jsReader }}')" class="bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white py-1.5 px-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 border border-emerald-100 hover:border-emerald-600 shadow-sm">
+                                                <i class="fa-solid fa-book-open text-[10px]"></i> Baca
+                                            </button>
+                                            <button onclick="saveBook('{{ $volId }}', '{{ $jsTitle }}', '{{ $jsAuthor }}', '{{ $jsCat }}', '{{ $jsCover }}', '{{ $jsReader }}')" class="bg-blue-600 hover:bg-blue-700 text-white py-1.5 px-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 shadow-sm">
+                                                <i class="fa-solid fa-bookmark text-[10px]"></i> Simpan
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-10 text-center">
+                    <i class="fa-solid fa-book-open text-4xl text-slate-300 mb-3"></i>
+                    <p class="text-slate-500 font-medium">Rekomendasi buku tidak tersedia saat ini.</p>
+                    <p class="text-slate-400 text-sm mt-1">Coba cari buku menggunakan kolom pencarian di atas.</p>
+                </div>
+                @endif
             </div>
 
-            <!-- Search Results Grid -->
-            <div id="searchResults" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
-                <!-- Results will be injected here via JS -->
+            <!-- ============================================ -->
+            <!-- SEARCH RESULTS AREA                          -->
+            <!-- ============================================ -->
+            <div id="searchResultsArea" class="hidden">
+                <div class="mb-4 flex items-center justify-between">
+                    <button onclick="backToRecommendations()" class="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors group">
+                        <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                        Kembali ke Rekomendasi
+                    </button>
+                    <span id="searchResultCount" class="text-sm text-slate-500"></span>
+                </div>
+
+                <!-- Search Results Grid -->
+                <div id="searchResults" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Results will be injected here via JS -->
+                </div>
             </div>
         </div>
 
@@ -339,18 +546,49 @@
         }
 
         // ============================================================
-        // FIX UTAMA:
-        // Controller (GoogleBooksController@search) mengirim JSON dengan
-        // struktur: { success, total_items, books: [ {volume_id, title,
-        // author_text, cover_url, ...} ] }
-        // BUKAN struktur mentah Google API { items: [ {id, volumeInfo:{}} ] }.
-        // Sebelumnya kode di sini membaca "data.items" yang selalu undefined,
-        // sehingga pencarian selalu terlihat "tidak ditemukan" padahal API
-        // sebenarnya berhasil. Di bawah ini sudah disesuaikan dengan format
-        // asli yang dikirim controller.
+        // RECOMMENDATIONS - rendered server-side, JS only for filtering
         // ============================================================
 
-        // Search Books via AJAX
+        function scrollGenre(sectionId, direction) {
+            const scrollContainer = document.getElementById(`scroll-${sectionId}`);
+            if (!scrollContainer) return;
+            const scrollAmount = 400;
+            scrollContainer.scrollBy({
+                left: direction === 'right' ? scrollAmount : -scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+
+        function filterGenre(genreKey) {
+            document.querySelectorAll('.genre-chip').forEach(chip => {
+                if (chip.dataset.genre === genreKey) {
+                    chip.classList.add('active');
+                } else {
+                    chip.classList.remove('active');
+                }
+            });
+
+            document.querySelectorAll('.genre-section').forEach(section => {
+                if (genreKey === 'all' || section.dataset.genre === genreKey) {
+                    section.style.display = '';
+                    section.classList.add('animate-fade-in');
+                } else {
+                    section.style.display = 'none';
+                    section.classList.remove('animate-fade-in');
+                }
+            });
+        }
+
+        function backToRecommendations() {
+            document.getElementById('searchResultsArea').classList.add('hidden');
+            document.getElementById('recommendationsArea').classList.remove('hidden');
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResultCount').textContent = '';
+        }
+
+        // ============================================================
+        // SEARCH SYSTEM
+        // ============================================================
         function searchBooks() {
             const query = document.getElementById('searchInput').value.trim();
 
@@ -359,14 +597,14 @@
                 return;
             }
 
-            // UI State updates
-            document.getElementById('emptySearchState').classList.add('hidden');
+            document.getElementById('recommendationsArea').classList.add('hidden');
+            document.getElementById('searchResultsArea').classList.remove('hidden');
+
             document.getElementById('searchResults').classList.add('hidden');
             document.getElementById('loadingState').classList.remove('hidden');
             document.getElementById('loadingState').classList.add('flex');
 
-            // API endpoint url
-            const url = `{{ Route::has('admin.google-books.search') ? route('admin.google-books.search') : '/admin/google-books/search' }}?q=${encodeURIComponent(query)}`;
+            const url = `{{ Route::has('admin.google-books.search') ? route('admin.google-books.search', [], false) : '/admin/google-books/search' }}?q=${encodeURIComponent(query)}`;
 
             fetch(url, {
                 method: 'GET',
@@ -380,44 +618,23 @@
                 document.getElementById('loadingState').classList.add('hidden');
                 document.getElementById('loadingState').classList.remove('flex');
 
-                // Response controller: { success, total_items, books: [...] }
                 if (ok && data.success && Array.isArray(data.books) && data.books.length > 0) {
+                    document.getElementById('searchResultCount').textContent = `${data.books.length} buku ditemukan untuk "${query}"`;
                     renderResults(data.books);
                 } else {
                     document.getElementById('searchResults').classList.add('hidden');
-                    document.getElementById('emptySearchState').classList.remove('hidden');
-                    document.getElementById('emptySearchState').innerHTML = `
-                        <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-                            <i class="fa-solid fa-magnifying-glass-minus text-2xl text-red-400"></i>
-                        </div>
-                        <h3 class="text-lg font-semibold text-slate-700 mb-1">Buku tidak ditemukan</h3>
-                        <p class="text-slate-500 text-sm">${data.message || 'Coba gunakan kata kunci lain untuk pencarian Anda.'}</p>
-                    `;
+                    document.getElementById('searchResults').innerHTML = '';
+                    showToast(data.message || 'Buku tidak ditemukan', 'warning');
                 }
             })
             .catch(error => {
                 console.error('Error fetching Google Books:', error);
                 document.getElementById('loadingState').classList.add('hidden');
                 document.getElementById('loadingState').classList.remove('flex');
-
-                document.getElementById('emptySearchState').classList.remove('hidden');
-                document.getElementById('emptySearchState').innerHTML = `
-                    <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-                        <i class="fa-solid fa-triangle-exclamation text-2xl text-red-500"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-slate-700 mb-1">Terjadi Kesalahan</h3>
-                    <p class="text-slate-500 text-sm">Gagal mengambil data dari server. Silakan coba lagi nanti.</p>
-                `;
-
                 showToast('Gagal melakukan pencarian', 'error');
             });
         }
 
-        // Render Search Results
-        // book di sini mengikuti struktur dari controller:
-        // { volume_id, title, authors, author_text, publisher, published_date,
-        //   description, short_desc, categories, page_count, cover_url,
-        //   preview_link, reader_link, embeddable, viewability, info_link }
         function renderResults(books) {
             const container = document.getElementById('searchResults');
             container.innerHTML = '';
@@ -432,7 +649,6 @@
                 const coverUrl   = book.cover_url || '';
                 const readerLink = book.reader_link || book.preview_link || '';
 
-                // Escape quotes for JS inline functions
                 const safeTitle    = title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 const safeAuthor   = author.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 const safeCategory = category.replace(/'/g, "\\'").replace(/"/g, '&quot;');
@@ -480,7 +696,6 @@
 
         // Save Book via AJAX
         function saveBook(volumeId, title, author, category, coverUrl, readerLink) {
-            // Unescape single quotes that were escaped for JS execution
             const unescapedTitle  = title.replace(/\\'/g, "'");
             const unescapedAuthor = author.replace(/\\'/g, "'");
             const unescapedCover  = coverUrl.replace(/\\'/g, "'");
@@ -495,8 +710,7 @@
             formData.append('cover_url', unescapedCover);
             formData.append('reader_url', unescapedReader);
 
-            // Route resmi untuk simpan: admin.google-books.store -> POST /admin/google-books/simpan
-            const url = `{{ Route::has('admin.google-books.store') ? route('admin.google-books.store') : '/admin/google-books/simpan' }}`;
+            const url = `{{ Route::has('admin.google-books.store') ? route('admin.google-books.store', [], false) : '/admin/google-books/simpan' }}`;
 
             fetch(url, {
                 method: 'POST',
@@ -511,7 +725,6 @@
                 if (ok && data.success) {
                     showToast(data.message || 'Buku berhasil disimpan ke koleksi!', 'success');
                 } else if (status === 409) {
-                    // Buku sudah ada di koleksi
                     showToast(data.message || 'Buku ini sudah ada di koleksi perpustakaan.', 'warning');
                 } else {
                     showToast(data.message || 'Gagal menyimpan buku', 'error');
@@ -530,7 +743,6 @@
             const titleEl = document.getElementById('readerTitle');
             const extLink = document.getElementById('readerExternalLink');
 
-            // Set Modal Details
             titleEl.textContent = title.replace(/\\'/g, "'");
 
             if (readerLink) {
@@ -540,12 +752,10 @@
                 extLink.classList.add('hidden');
             }
 
-            // Set iframe src (using Google Books Embed)
             iframe.style.opacity = '0';
             iframe.src = `https://books.google.com/books?id=${volumeId}&lpg=PP1&pg=PP1&output=embed`;
 
-            // Show modal
-            document.body.classList.add('overflow-hidden'); // prevent background scrolling
+            document.body.classList.add('overflow-hidden');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
@@ -554,13 +764,11 @@
             const modal  = document.getElementById('readerModal');
             const iframe = document.getElementById('readerFrame');
 
-            // Clear iframe source to stop loading
             iframe.src = '';
 
-            // Hide modal
             modal.classList.add('hidden');
             modal.classList.remove('flex');
-            document.body.classList.remove('overflow-hidden'); // restore background scrolling
+            document.body.classList.remove('overflow-hidden');
         }
 
         // Simple Toast Notification System
@@ -605,22 +813,23 @@
 
             const toastElement = document.getElementById(toastId);
 
-            // Animate in
             setTimeout(() => {
                 toastElement.classList.remove('translate-y-10', 'opacity-0');
                 toastElement.classList.add('translate-y-0', 'opacity-100');
             }, 10);
 
-            // Auto remove after 3 seconds
             setTimeout(() => {
-                toastElement.classList.remove('translate-y-0', 'opacity-100');
-                toastElement.classList.add('translate-y-10', 'opacity-0');
-
-                setTimeout(() => {
-                    toastElement.remove();
-                }, 300);
+                if (toastElement) {
+                    toastElement.classList.remove('translate-y-0', 'opacity-100');
+                    toastElement.classList.add('translate-y-10', 'opacity-0');
+                    setTimeout(() => {
+                        toastElement.remove();
+                    }, 300);
+                }
             }, 3000);
         }
+
+        // Recommendations are already rendered server-side - no AJAX needed.
     </script>
 </body>
 </html>
