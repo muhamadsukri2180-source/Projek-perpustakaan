@@ -10,10 +10,25 @@ use Illuminate\Support\Facades\Storage;
 class BukuDigitalController extends Controller
 {
     /**
-     * READ: Menampilkan daftar buku digital.
-     * Mengarahkan Tampilan (View) secara otomatis berdasarkan Role User:
-     * - Siswa  => view('siswa.buku')
-     * - Admin / Petugas => view('admin.buku')
+     * Helper privat untuk mengambil data user terautentikasi 
+     * Prioritas pengecekan: Admin (web) -> Petugas -> Siswa
+     */
+    private function getAuthUser()
+    {
+        if (Auth::guard('web')->check()) {
+            return Auth::guard('web')->user();
+        }
+        if (Auth::guard('petugas')->check()) {
+            return Auth::guard('petugas')->user();
+        }
+        if (Auth::guard('siswa')->check()) {
+            return Auth::guard('siswa')->user();
+        }
+        return null;
+    }
+
+    /**
+     * READ: Menampilkan daftar buku digital berdasarkan role user.
      */
     public function index(Request $request)
     {
@@ -32,18 +47,26 @@ class BukuDigitalController extends Controller
         // Pagination 9 data per halaman
         $bukuDigitals = $query->latest()->paginate(9);
 
-        // Ambil data user yang sedang login
-        $user = Auth::user();
+        // Ambil data user aktif berdasarkan guard
+        $user = $this->getAuthUser();
 
-        // JIKA USER ADALAH SISWA
-        if ($user->role === 'siswa') {
-            // Mengambil relasi data siswa (jika tabel users berelasi ke tabel siswas)
-            $siswa = $user->siswa ?? $user;
+        // 1. JIKA USER ADALAH ADMIN (Guard Web)
+        if (Auth::guard('web')->check() || ($user && isset($user->role) && $user->role === 'admin')) {
+            return view('admin.buku', compact('bukuDigitals'));
+        }
 
+        // 2. JIKA USER ADALAH PETUGAS (Guard Petugas)
+        if (Auth::guard('petugas')->check() || ($user && isset($user->role) && $user->role === 'petugas')) {
+            return view('petugas.buku', compact('bukuDigitals'));
+        }
+
+        // 3. JIKA USER ADALAH SISWA (Guard Siswa)
+        if (Auth::guard('siswa')->check() || ($user && isset($user->role) && $user->role === 'siswa')) {
+            $siswa = $user;
             return view('siswa.buku', compact('bukuDigitals', 'siswa'));
         }
 
-        // JIKA USER ADALAH ADMIN ATAU PETUGAS
+        // Default fallback (jika tidak terdeteksi)
         return view('admin.buku', compact('bukuDigitals'));
     }
 
@@ -100,7 +123,7 @@ class BukuDigitalController extends Controller
             'file_pdf'     => 'nullable|mimes:pdf|max:20480',
         ]);
 
-        // Cek jika ada cover baru yang diunggah
+        // Cek jika ada cover baru
         if ($request->hasFile('cover')) {
             if ($buku->cover && Storage::disk('public')->exists($buku->cover)) {
                 Storage::disk('public')->delete($buku->cover);
@@ -108,7 +131,7 @@ class BukuDigitalController extends Controller
             $buku->cover = $request->file('cover')->store('buku-cover', 'public');
         }
 
-        // Cek jika ada file PDF baru yang diunggah
+        // Cek jika ada file PDF baru
         if ($request->hasFile('file_pdf')) {
             if ($buku->file_pdf && Storage::disk('public')->exists($buku->file_pdf)) {
                 Storage::disk('public')->delete($buku->file_pdf);
@@ -135,12 +158,10 @@ class BukuDigitalController extends Controller
 
         $buku = BukuDigital::findOrFail($id);
 
-        // Hapus file cover dari storage jika ada
         if ($buku->cover && Storage::disk('public')->exists($buku->cover)) {
             Storage::disk('public')->delete($buku->cover);
         }
 
-        // Hapus file PDF dari storage jika ada
         if ($buku->file_pdf && Storage::disk('public')->exists($buku->file_pdf)) {
             Storage::disk('public')->delete($buku->file_pdf);
         }
@@ -151,13 +172,14 @@ class BukuDigitalController extends Controller
     }
 
     /**
-     * Helper Function untuk otorisasi keamanan role Admin & Petugas
+     * Helper Function untuk otorisasi keamanan Admin & Petugas
      */
     private function authorizeAdminOrPetugas()
     {
-        $role = Auth::user()->role;
-        
-        if (!in_array($role, ['admin', 'petugas'])) {
+        $isAdmin   = Auth::guard('web')->check();
+        $isPetugas = Auth::guard('petugas')->check();
+
+        if (!$isAdmin && !$isPetugas) {
             abort(403, 'Anda tidak memiliki akses untuk melakukan tindakan ini.');
         }
     }

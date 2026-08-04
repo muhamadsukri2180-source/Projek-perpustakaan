@@ -10,7 +10,7 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .animated-gradient-blue {
-            background: linear-gradient(-45deg, #0284c7, #0369a1, #0f766e, #0284c7);
+            background: linear-gradient(-45deg, #0284c7, #38bdf8, #60a5fa, #3b82f6);
             background-size: 400% 400%;
             animation: gradientMove 8s ease infinite;
         }
@@ -21,7 +21,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased">
+<body class="bg-slate-50 text-slate-800 antialiased flex flex-col min-h-screen">
 
     <nav class="animated-gradient-blue text-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -41,11 +41,11 @@
                        class="px-4 py-2 rounded-xl text-white/90 hover:bg-white/10 hover:text-white transition">
                         <i class="fa-solid fa-house mr-1.5 text-xs"></i> Dashboard
                     </a>
-                    <a href="{{ route('siswa.buku') }}"
+                    <a href="{{ Route::has('siswa.buku') ? route('siswa.buku') : '#' }}"
                        class="px-4 py-2 rounded-xl bg-white/20 text-white font-semibold shadow-sm border border-white/30 backdrop-blur-md transition">
                         <i class="fa-solid fa-book mr-1.5 text-xs"></i> Buku Digital
                     </a>
-                    <a href="{{ route('siswa.riwayat') }}"
+                    <a href="{{ Route::has('siswa.riwayat') ? route('siswa.riwayat') : '#' }}"
                        class="px-4 py-2 rounded-xl text-white/90 hover:bg-white/10 hover:text-white transition">
                         <i class="fa-solid fa-clock-rotate-left mr-1.5 text-xs"></i> Riwayat Kunjungan
                     </a>
@@ -77,7 +77,7 @@
         </div>
     </nav>
 
-    <main class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+    <main class="flex-grow p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
 
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -87,7 +87,7 @@
         </div>
 
         <div class="mb-6">
-            <form action="{{ route('siswa.buku') }}" method="GET" class="flex gap-2">
+            <form action="{{ Route::has('siswa.buku') ? route('siswa.buku') : '#' }}" method="GET" class="flex gap-2">
                 <input type="text" name="cari" value="{{ request('cari') }}" placeholder="Cari judul, penulis, atau kategori..." 
                        class="w-full max-w-md px-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-sm">
                 <button type="submit" class="bg-sky-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-sky-700 transition shadow-sm">
@@ -140,6 +140,10 @@
             {{ $bukuDigitals->links() }}
         </div>
     </main>
+
+    <footer class="bg-white border-t border-slate-100 py-4 text-center text-xs text-slate-400 mt-auto">
+        <p>&copy; {{ date('Y') }} Sistem Presensi Perpustakaan Digital. All rights reserved.</p>
+    </footer>
 
     <div id="modalBaca" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-2 sm:p-6">
         <div class="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl overflow-hidden">
