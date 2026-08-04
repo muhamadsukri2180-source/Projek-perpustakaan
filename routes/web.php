@@ -7,6 +7,7 @@ use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\BukuDigitalController;
+use App\Http\Controllers\GoogleBooksController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,6 +84,12 @@ Route::middleware(['auth:web'])->prefix('admin')->name('admin.')->group(function
     Route::put('/buku/{id}', [BukuDigitalController::class, 'update'])->name('buku.update');
     Route::delete('/buku/{id}', [BukuDigitalController::class, 'destroy'])->name('buku.destroy');
     Route::get('/buku/{id}/baca', [BukuDigitalController::class, 'baca'])->name('buku.baca');
+
+    // Google Books - Pencarian & Pembaca Buku Digital Online
+    Route::get('/google-books', [GoogleBooksController::class, 'index'])->name('google-books');
+    Route::get('/google-books/search', [GoogleBooksController::class, 'search'])->name('google-books.search');
+    Route::post('/google-books/simpan', [GoogleBooksController::class, 'store'])->name('google-books.store');
+    Route::delete('/google-books/{id}', [GoogleBooksController::class, 'destroy'])->name('google-books.destroy');
 });
 
 
@@ -127,6 +134,12 @@ Route::middleware(['auth:petugas'])->prefix('petugas')->name('petugas.')->group(
     Route::put('/buku/{id}', [BukuDigitalController::class, 'update'])->name('buku.update');
     Route::delete('/buku/{id}', [BukuDigitalController::class, 'destroy'])->name('buku.destroy');
     Route::get('/buku/{id}/baca', [BukuDigitalController::class, 'baca'])->name('buku.baca');
+
+    // Google Books - Pencarian & Pembaca Buku Digital Online
+    Route::get('/google-books', [GoogleBooksController::class, 'index'])->name('google-books');
+    Route::get('/google-books/search', [GoogleBooksController::class, 'search'])->name('google-books.search');
+    Route::post('/google-books/simpan', [GoogleBooksController::class, 'store'])->name('google-books.store');
+    Route::delete('/google-books/{id}', [GoogleBooksController::class, 'destroy'])->name('google-books.destroy');
 });
 
 
@@ -140,4 +153,8 @@ Route::middleware(['auth:siswa'])->prefix('siswa')->name('siswa.')->group(functi
     // Buku Digital
     Route::get('/buku', [BukuDigitalController::class, 'index'])->name('buku');
     Route::get('/buku/{id}/baca', [BukuDigitalController::class, 'baca'])->name('buku.baca');
+
+    // Google Books - Pencarian & Pembaca Buku Digital Online (Read-only untuk Siswa)
+    Route::get('/google-books', [GoogleBooksController::class, 'index'])->name('google-books');
+    Route::get('/google-books/search', [GoogleBooksController::class, 'search'])->name('google-books.search');
 });

@@ -112,9 +112,15 @@
                 <p class="text-slate-500 text-sm">Kelola dan publikasikan materi buku digital untuk siswa.</p>
             </div>
             
-            <button onclick="openModalTambah()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-emerald-200/50 flex items-center gap-2 transition active:scale-95 w-max">
-                <i class="fa-solid fa-plus"></i> Tambah Buku Baru
-            </button>
+            <div class="flex flex-wrap items-center gap-2.5">
+                <button onclick="openModalTambah()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-emerald-200/50 flex items-center gap-2 transition active:scale-95">
+                    <i class="fa-solid fa-plus"></i> Tambah Buku Baru
+                </button>
+
+                <a href="{{ Route::has('petugas.google-books') ? route('petugas.google-books') : '#' }}" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-teal-200/50 flex items-center gap-2 transition active:scale-95">
+                    <i class="fa-solid fa-globe"></i> Google Books
+                </a>
+            </div>
         </div>
 
         <div class="mb-6">
@@ -305,7 +311,7 @@
             document.getElementById('modalTambah').classList.add('hidden');
         }
 
-        // Modal Edit (Khusus Route Petugas)
+        // Modal Edit
         function openModalEdit(buku) {
             const baseUrl = "{{ url('/petugas/buku') }}/";
             document.getElementById('formEdit').action = baseUrl + buku.id;

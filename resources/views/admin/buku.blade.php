@@ -108,10 +108,17 @@
                 <h1 class="text-2xl font-extrabold text-slate-800">Kelola Buku Digital</h1>
                 <p class="text-slate-500 text-sm">Daftar seluruh buku digital yang tersedia.</p>
             </div>
-            
-            <button onclick="openModalTambah()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-blue-200 flex items-center gap-2 transition w-max">
-                <i class="fa-solid fa-plus"></i> Tambah Buku Baru
-            </button>
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-max">
+                <button onclick="openModalTambah()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-blue-200 flex items-center justify-center gap-2 transition w-max">
+                    <i class="fa-solid fa-plus"></i> Tambah Buku Baru
+                </button>
+
+                {{-- Tombol navigasi ke halaman Google Books --}}
+                <a href="{{ Route::has('admin.google-books') ? route('admin.google-books') : '#' }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-emerald-200 flex items-center justify-center gap-2 transition w-max">
+                    <i class="fa-solid fa-globe"></i> Google Books
+                </a>
+            </div>
         </div>
 
         <div class="mb-6">

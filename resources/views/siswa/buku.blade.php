@@ -84,6 +84,11 @@
                 <h1 class="text-2xl font-extrabold text-slate-800">Katalog Buku Digital</h1>
                 <p class="text-slate-500 text-sm">Temukan dan baca buku favoritmu secara digital kapan saja.</p>
             </div>
+
+            {{-- Tombol navigasi ke halaman Google Books --}}
+            <a href="{{ Route::has('siswa.google-books') ? route('siswa.google-books') : '#' }}" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-sky-200 flex items-center gap-2 transition w-max">
+                <i class="fa-solid fa-globe"></i> Jelajahi Google Books
+            </a>
         </div>
 
         <div class="mb-6">

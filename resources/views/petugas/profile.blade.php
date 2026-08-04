@@ -32,7 +32,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col justify-between">
 
-<nav class="animated-gradient-green text-white shadow-lg sticky top-0 z-50">
+    <nav class="animated-gradient text-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 
@@ -57,7 +57,7 @@
                     </a>
 
                      <a href="{{ Route::has('petugas.buku') ? route('petugas.buku') : '#' }}" 
-                       class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('petugas.buku*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-emerald-100 hover:text-white hover:bg-white/10' }}">
+                        class="px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 {{ request()->routeIs('petugas.buku*') ? 'bg-white/20 text-white font-bold shadow-sm border border-white/20 backdrop-blur-sm' : 'text-emerald-100 hover:text-white hover:bg-white/10' }}">
                         <i class="fa-solid fa-book text-xs"></i> Buku Digital
                     </a>
 
@@ -186,7 +186,7 @@
                         </p>
                     </div>
 
-                    <div class="p-4 bg-white border border-slate-200 rounded-2xl shadow-md inline-block transform hover:scale-105 transition duration-300">
+                    <div id="barcode-area" class="p-4 bg-white border border-slate-200 rounded-2xl shadow-md inline-block transform hover:scale-105 transition duration-300">
                         @if(isset($qrCode))
                             {!! $qrCode !!}
                         @else
@@ -204,6 +204,11 @@
                            class="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-md shadow-emerald-200 transition duration-200">
                             <i class="fa-solid fa-download text-sm"></i> Unduh Barcode Login
                         </a>
+                    @else
+                        <button onclick="window.print()"
+                                class="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-5 py-3 rounded-xl text-xs font-bold shadow-md shadow-emerald-200 transition duration-200">
+                            <i class="fa-solid fa-print text-sm"></i> Cetak / Unduh Barcode
+                        </button>
                     @endif
 
                 </div>
